@@ -220,6 +220,16 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Ve
 	result = Multiply(scaleMatrix, Multiply(rotateXYZMatrix, translateMatrix));
 	return result;
 }
+// 3次元アフィン変換行列
+Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Quaternion& rotate, const Vector3& translate) {
+	Matrix4x4 result;
+	Matrix4x4 scaleMatrix = MakeScaleMatrix(scale);
+	Matrix4x4 rotateMatrix = MakeRotateMatrix(rotate);
+	Matrix4x4 translateMatrix = MakeTranslateMatrix(translate);
+	//result = Multiply(rotateXYZMatrix, Multiply(scaleMatrix, translateMatrix));
+	result = Multiply(scaleMatrix, Multiply(rotateMatrix, translateMatrix));
+	return result;
+}
 // 透視投影行列
 Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip) {
 	Matrix4x4 result;
@@ -660,5 +670,14 @@ Quaternion Slerp(const Quaternion& q0, const Quaternion& q1, float t)
 		s0 * q0.y + s1 * q1.y,
 		s0 * q0.z + s1 * q1.z,
 		s0 * q0.w + s1 * q1.w
+	};
+}
+
+Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t)
+{
+	return Vector3{
+		v1.x + t * (v2.x - v1.x),
+		v1.y + t * (v2.y - v1.y),
+		v1.z + t * (v2.z - v1.z)
 	};
 }

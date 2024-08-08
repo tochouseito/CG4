@@ -40,6 +40,7 @@ Matrix4x4 MakeRotateZMatrix(float radian);
 Matrix4x4 MakeRotateXYZMatrix(Vector3& rotate);
 // 3次元アフィン変換行列
 Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
+Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Quaternion& rotate, const Vector3& translate);
 // 透視投影行列
 Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip);
 
@@ -86,3 +87,4 @@ Matrix4x4 MakeRotateMatrix(const Quaternion& quaternion);
 float Dot(const Quaternion& q0, const Quaternion& q1);
 // 球面線形補間
 Quaternion Slerp(const Quaternion& q0, const Quaternion& q1, float t);
+Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t);

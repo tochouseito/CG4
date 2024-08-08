@@ -58,3 +58,13 @@ void WorldTransform::UpdataMatrix() {
 	TransferMatrix();
 }
 
+void WorldTransform::UpdataAnimationMat()
+{
+	matWorld_ = MakeAffineMatrix(scale_, rotation_, translation_);
+	if (numInstance_ <= kNumMaxInstance_) {
+		worldData_[numInstance_].matWorld = Multiply(localMatrix_,matWorld_);
+		worldData_[numInstance_].worldInverse = Transpose(Inverse(matWorld_));
+		worldData_[numInstance_].rootNode = rootMatrix_;
+	}
+}
+

@@ -35,6 +35,8 @@ GameScene::~GameScene() {
 	delete suzanne_ ;
 	delete UtahTeapotModel_ ;
 	delete utahTeapot_ ;
+	delete animatedCubeModel_;
+	delete animatedCube_;
 }
 
 void GameScene::Initialize() {
@@ -123,6 +125,11 @@ void GameScene::Initialize() {
 	UtahTeapotModel_ = Model::LordModel("teapot.obj");
 	utahTeapot_ = new UtahTeapotModel();
 	utahTeapot_->Initialize(UtahTeapotModel_, textureHandle_[0], &viewProjection_);*/
+
+	animatedCubeModel_ = Model::LordModel("AnimatedCube.gltf");
+	animation_ = Model::LordAnimationFile("./Resources", "AnimatedCube.gltf");
+	animatedCube_ = new AnimatedCube();
+	animatedCube_->Initialize(animatedCubeModel_, textureHandle_[0], &viewProjection_, animation_);
 }
 
 void GameScene::Finalize()
@@ -188,6 +195,7 @@ void GameScene::Update() {
 	multiMesh_->Updata();
 	suzanne_->Updata();
 	utahTeapot_->Updata();*/
+	animatedCube_->Updata();
 	ImGui::Begin("HSV");
 	ImGui::DragFloat("hue", &DirectXCommon::GetInstance()->GetHSVData()->hue, 0.01f);
 	ImGui::DragFloat("saturation", &DirectXCommon::GetInstance()->GetHSVData()->saturation, 0.01f);
@@ -229,4 +237,5 @@ void GameScene::Draw() {
 	//multiMesh_->Draw();
 	//suzanne_->Draw();
 	//utahTeapot_->Draw();
+	animatedCube_->Draw();
 }

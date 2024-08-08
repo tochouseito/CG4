@@ -105,6 +105,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Game\Objects\AnimatedCube.cpp" />
     <ClCompile Include="Game\Objects\BunnyModel.cpp" />
     <ClCompile Include="Game\Scenes\BaseScene.cpp" />
     <ClCompile Include="Engine\3D\DebugCamera.cpp" />
@@ -157,6 +158,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\Objects\UtahTeapotModel.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Game\Objects\AnimatedCube.h" />
     <ClInclude Include="Game\Objects\BunnyModel.h" />
     <ClInclude Include="Game\Scenes\AbstractSceneFactory.h" />
     <ClInclude Include="Game\Scenes\BaseScene.h" />

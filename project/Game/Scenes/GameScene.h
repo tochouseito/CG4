@@ -12,6 +12,7 @@
 #include"ParticleManager.h"
 //#include"EmitterManager.h"
 #include"DebugCamera.h"
+#include"AnimatedCube.h"
 
 
 // 2D
@@ -128,7 +129,9 @@ private: // メンバ変数
 	suzanne* suzanne_ = nullptr;
 	Model* UtahTeapotModel_ = nullptr;
 	UtahTeapotModel* utahTeapot_ = nullptr;
-
+	Model* animatedCubeModel_ = nullptr;
+	AnimatedCube* animatedCube_ = nullptr;
+	Model::Animation* animation_ = nullptr;
 
 	/// <summary>
 	/// ゲームシーン用

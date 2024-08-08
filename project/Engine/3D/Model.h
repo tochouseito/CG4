@@ -9,6 +9,8 @@
 #include <cstdint>
 #include<random>
 #include<unordered_map>
+#include"mathShapes.h"
+#include<map>
 
 // external
 #include<assimp/Importer.hpp>
@@ -38,6 +40,35 @@ public:
 		std::unordered_map<std::string, ObjectData> object;
 		std::vector<std::string> names;
 		Node rootNode;
+	};
+	//struct KeyframeVector3 {
+	//	Vector3 value;//!<キーフレームの値
+	//	float time;//!<キーフレームの時刻（単位は秒）
+	//};
+	//struct KeyframeQuaternion {
+	//	Quaternion value;//!<キーフレームの値
+	//	float time;//!<キーフレームの時刻（単位は秒）
+	//};
+	template<typename tValue>
+	struct Keyframe {
+		float time;
+		tValue value;
+	};
+	using KeyframeVector3 = Keyframe<Vector3>;
+	using KeyframeQuaternion = Keyframe<Quaternion>;
+	template<typename tValue>
+	struct AnimationCurve {
+		std::vector<Keyframe<tValue>> keyframes;
+	};
+	struct NodeAnimation {
+		AnimationCurve<Vector3> translate;
+		AnimationCurve<Quaternion> rotate;
+		AnimationCurve<Vector3> scale;
+	};
+	struct Animation {
+		float duration;// アニメーション全体の尺（単位は秒)
+		// NodeAnimationの集合。Node名で引けるようにしておく
+		std::map<std::string, NodeAnimation> nodeAnimations;
 	};
 public:
 	
@@ -73,6 +104,7 @@ public:
 
 	static Model* LordModel(const std::string& filename);
 
+	static Animation* LordAnimationFile(const std::string& directoryPath, const std::string& filename);
 
 	/*デフォルトオブジェクトの生成*/
 
@@ -82,15 +114,21 @@ public:
 	/*球オブジェクト*/
 	static Model* CreateSphere(uint32_t Subdivision = 16);
 
+	Vector3 CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time);
+
+	Quaternion CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time);
+
 public:/*getter*/
 	Material* GetMaterial() { return material_; }
 	Mesh* GetMesh() { return mesh_; }
 	PointLight* GetPointLight() { return pointLight_; }
 	SpotLight* GetSpotLight() { return spotLight_; }
 	DirectionalLight* GetDirectionalLight() { return directionalLight_; }
+	Animation* GetAnimation() { return animation_; }
+	ModelData* GetModelData() { return modelData_; }
 public:/*setter*/
 	void SetBlendMode(uint32_t blendMode) { current_blend = blendMode; }
-
+	void SetAnimation(Animation* animation) { animation_ = animation; }
 private:/*メンバ変数*/
 	
 private:
@@ -108,6 +146,7 @@ private:
 	//std::unordered_map<std::string, ObjectData> modelData_;
 	//std::unordered_map<std::string, OBJModelData> modelData_;
 	ModelData* modelData_;
+	Animation* animation_;
 	// 現在選択されているアイテムのインデックス
 	uint32_t current_blend = 0;
 	//UINT vertices = 0;

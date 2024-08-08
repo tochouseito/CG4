@@ -29,8 +29,9 @@ public:
 	// ローカル座標
 	Vector3 translation_ = { 0.0f, 0.0f, 0.0f };
 	// ローカル → ワールド変換行列
-	Matrix4x4 matWorld_ = { 0 };
+	Matrix4x4 matWorld_ = { 0.0f };
 
+	Matrix4x4 localMatrix_ = { 0.0f };
 	
 	Matrix4x4 rootMatrix_;
 	uint32_t numInstance_ = 0;
@@ -56,6 +57,8 @@ public:
 	/// 行列の更新
 	/// </summary>
 	void UpdataMatrix();
+
+	void UpdataAnimationMat();
 
 	ConstBufferDataWorldTransform* GetCBVWorldData() { return worldData_; }
 
