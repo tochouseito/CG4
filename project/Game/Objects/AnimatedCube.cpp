@@ -30,16 +30,17 @@ void AnimatedCube::Updata()
 #ifdef _DEBUG
 	// ImGuiフレーム開始
 	ImGui::Begin("3Dobjects");
-	if (ImGui::CollapsingHeader("UtahTeapot")) {
-		ImGui::DragFloat3("translate##UtahTeapot", &worldTransform_.translation_.x, 0.01f);
-		ImGui::DragFloat3("Rotate##UtahTeapot", &worldTransform_.rotation_.x, 0.01f);
-		ImGui::DragFloat3("Scale##UtahTeapot", &worldTransform_.scale_.x, 0.01f);
+	if (ImGui::CollapsingHeader("AnimatedCube")) {
+		ImGui::DragFloat3("translate##AnimatedCube", &worldTransform_.translation_.x, 0.01f);
+		ImGui::DragFloat3("Rotate##AnimatedCube", &worldTransform_.rotation_.x, 0.01f);
+		ImGui::DragFloat3("Scale##AnimatedCube", &worldTransform_.scale_.x, 0.01f);
 	}
 	ImGui::End();
 #endif
 	/*行列を定数バッファに更新、転送*/
 	//worldTransform_.UpdataMatrix();
 	worldTransform_.UpdataAnimationMat();
+	//worldTransform_.TransferMatrix();
 }
 
 void AnimatedCube::Draw()

@@ -124,8 +124,12 @@ public:/*getter*/
 	PointLight* GetPointLight() { return pointLight_; }
 	SpotLight* GetSpotLight() { return spotLight_; }
 	DirectionalLight* GetDirectionalLight() { return directionalLight_; }
-	Animation* GetAnimation() { return animation_; }
-	ModelData* GetModelData() { return modelData_; }
+	Animation* GetAnimation() { 
+		return animation_;
+	}
+	ModelData* GetModelData() { 
+		return modelData_;
+	}
 public:/*setter*/
 	void SetBlendMode(uint32_t blendMode) { current_blend = blendMode; }
 	void SetAnimation(Animation* animation) { animation_ = animation; }

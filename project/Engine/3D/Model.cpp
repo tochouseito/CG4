@@ -188,6 +188,20 @@ Model::Animation* Model::LordAnimationFile(const std::string& directoryPath, con
 			keyframe.value = { -keyAssimp.mValue.x,keyAssimp.mValue.y,keyAssimp.mValue.z };// 右手->左手
 			nodeAnimation.translate.keyframes.push_back(keyframe);
 		}
+		for (uint32_t keyIndex = 0; keyIndex < nodeAnimationAssimp->mNumRotationKeys; ++keyIndex) {
+			aiQuatKey& keyAssimp = nodeAnimationAssimp->mRotationKeys[keyIndex];
+			KeyframeQuaternion keyframe;
+			keyframe.time = float(keyAssimp.mTime / animationAssimp->mTicksPerSecond);// ここも秒に変換
+			keyframe.value = { keyAssimp.mValue.x,-keyAssimp.mValue.y,-keyAssimp.mValue.z,keyAssimp.mValue.w };
+			nodeAnimation.rotate.keyframes.push_back(keyframe);
+		}
+		for (uint32_t keyIndex = 0; keyIndex < nodeAnimationAssimp->mNumScalingKeys; ++keyIndex) {
+			aiVectorKey& keyAssimp = nodeAnimationAssimp->mScalingKeys[keyIndex];
+			KeyframeVector3 keyframe;
+			keyframe.time = float(keyAssimp.mTime / animationAssimp->mTicksPerSecond);// ここも秒に変換
+			keyframe.value = { keyAssimp.mValue.x,keyAssimp.mValue.y,keyAssimp.mValue.z };
+			nodeAnimation.scale.keyframes.push_back(keyframe);
+		}
 		/*
 		RotateはmNumRotationKeys/mRotationKeys,ScaleはmNumScalingKeys/mScalingKeysで取得できるので同様に行う。
 		RotateはQuaternionで、右手->左手に変換するために、yとzを反転させる必要がある。Scaleはそのままでいい。
@@ -341,6 +355,10 @@ Model::ModelData*  Model::LoadModelFile(const std::string& directoryPath, const 
 	///
 	/// 名前被りを止める処理をここに実装
 	/// 
+	// 子ノードがないなら親ノード名だけ格納
+	if (modelData->rootNode.children.empty()) {
+		modelData->names.push_back(modelData->rootNode.name.c_str());
+	}
 	for (uint32_t NameIndex = 0; NameIndex < modelData->rootNode.children.size(); ++NameIndex) {
 		modelData->names.push_back(modelData->rootNode.children[NameIndex].name.c_str());
 	}
