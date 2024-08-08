@@ -448,3 +448,217 @@ Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m)
 	Vector3 result{ v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0], v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1], v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2] };
 	return result;
 }
+
+Matrix4x4 MakeRotateAxisAngle(const Vector3& axis, float angle)
+{
+	Vector3 normAxis = axis;
+	float axisLength = std::sqrt(axis.x * axis.x + axis.y * axis.y + axis.z * axis.z);
+	if (axisLength != 0.0f) {
+		normAxis.x /= axisLength;
+		normAxis.y /= axisLength;
+		normAxis.z /= axisLength;
+	}
+
+	float cosTheta = std::cos(angle);
+	float sinTheta = std::sin(angle);
+	float oneMinusCosTheta = 1.0f - cosTheta;
+
+	Matrix4x4 rotateMatrix;
+
+	rotateMatrix.m[0][0] = cosTheta + normAxis.x * normAxis.x * oneMinusCosTheta;
+	rotateMatrix.m[0][1] = normAxis.x * normAxis.y * oneMinusCosTheta - normAxis.z * sinTheta;
+	rotateMatrix.m[0][2] = normAxis.x * normAxis.z * oneMinusCosTheta + normAxis.y * sinTheta;
+	rotateMatrix.m[0][3] = 0.0f;
+
+	rotateMatrix.m[1][0] = normAxis.y * normAxis.x * oneMinusCosTheta + normAxis.z * sinTheta;
+	rotateMatrix.m[1][1] = cosTheta + normAxis.y * normAxis.y * oneMinusCosTheta;
+	rotateMatrix.m[1][2] = normAxis.y * normAxis.z * oneMinusCosTheta - normAxis.x * sinTheta;
+	rotateMatrix.m[1][3] = 0.0f;
+
+	rotateMatrix.m[2][0] = normAxis.z * normAxis.x * oneMinusCosTheta - normAxis.y * sinTheta;
+	rotateMatrix.m[2][1] = normAxis.z * normAxis.y * oneMinusCosTheta + normAxis.x * sinTheta;
+	rotateMatrix.m[2][2] = cosTheta + normAxis.z * normAxis.z * oneMinusCosTheta;
+	rotateMatrix.m[2][3] = 0.0f;
+
+	rotateMatrix.m[3][0] = 0.0f;
+	rotateMatrix.m[3][1] = 0.0f;
+	rotateMatrix.m[3][2] = 0.0f;
+	rotateMatrix.m[3][3] = 1.0f;
+
+	rotateMatrix = Transpose(rotateMatrix);
+
+	return rotateMatrix;
+}
+
+Matrix4x4 DirectionToDirection(const Vector3& from, const Vector3& to)
+{
+	Matrix4x4 rotateMatrix = { 0.0f };
+	Vector3 n = Normalize(Cross(from, to));
+	if (from == -to) {
+		if (from.x != 0.0f || from.y != 0.0f) {
+			n = Vector3{ from.y,-from.x,0.0f };
+		} else if (from.x != 0.0f || from.z != 0.0f) {
+			n = Vector3{ from.z,0.0f,-from.x };
+		}
+	}
+	float cosTheta = Dot(from, to);
+	float sinTheta = Length(Cross(from, to));
+	rotateMatrix = {
+		(n.x * n.x) * (1 - cosTheta) + cosTheta,(n.x * n.y) * (1 - cosTheta) + (n.z * sinTheta),(n.x * n.z) * (1 - cosTheta) - (n.y * sinTheta),0.0f,
+		(n.x * n.y) * (1 - cosTheta) - (n.z * sinTheta),(n.y * n.y) * (1 - cosTheta) + cosTheta,(n.y * n.z) * (1 - cosTheta) + (n.x * sinTheta),0.0f,
+		(n.x * n.z) * (1 - cosTheta) + (n.y * sinTheta),(n.y * n.z) * (1 - cosTheta) - (n.x * sinTheta),(n.z * n.z) * (1 - cosTheta) + cosTheta,0.0f,
+		0.0f,0.0f,0.0f,1.0f
+	};
+	return rotateMatrix;
+}
+
+Quaternion Multiply(const Quaternion& lhs, const Quaternion& rhs)
+{
+	return {
+		lhs.w * rhs.x + lhs.x * rhs.w + lhs.y * rhs.z - lhs.z * rhs.y,
+		lhs.w * rhs.y - lhs.x * rhs.z + lhs.y * rhs.w + lhs.z * rhs.x,
+		lhs.w * rhs.z + lhs.x * rhs.y - lhs.y * rhs.x + lhs.z * rhs.w,
+		lhs.w * rhs.w - lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z
+	};
+}
+
+Quaternion IdentityQuaternion()
+{
+	return { 0.0f, 0.0f, 0.0f, 1.0f };
+}
+
+Quaternion Conjugate(const Quaternion& quaternion)
+{
+	return { -quaternion.x, -quaternion.y, -quaternion.z, quaternion.w };
+}
+
+float Norm(const Quaternion& quaternion)
+{
+	return std::sqrt(quaternion.x * quaternion.x +
+		quaternion.y * quaternion.y +
+		quaternion.z * quaternion.z +
+		quaternion.w * quaternion.w);
+}
+
+Quaternion Normalize(const Quaternion& quaternion)
+{
+	float norm = Norm(quaternion);
+	if (norm == 0.0f) {
+		return { 0.0f, 0.0f, 0.0f, 1.0f };
+	}
+	return { quaternion.x / norm, quaternion.y / norm, quaternion.z / norm, quaternion.w / norm };
+}
+
+Quaternion Inverse(const Quaternion& quaternion)
+{
+	Quaternion conjugate = Conjugate(quaternion);
+	float norm = Norm(quaternion);
+	float normSq = norm * norm;
+	if (normSq == 0.0f) {
+		return { 0.0f, 0.0f, 0.0f, 1.0f };
+	}
+	return { conjugate.x / normSq, conjugate.y / normSq, conjugate.z / normSq, conjugate.w / normSq };
+}
+
+Quaternion MakeRotateAxisAngleQuaternion(const Vector3& axis, float angle)
+{
+	Vector3 normAxis = Normalize(axis);
+	float sinHalfAngle = std::sin(angle / 2.0f);
+	float cosHalfAngle = std::cos(angle / 2.0f);
+	return { normAxis.x * sinHalfAngle, normAxis.y * sinHalfAngle, normAxis.z * sinHalfAngle, cosHalfAngle };
+}
+
+Vector3 RotateVector(const Vector3& vector, const Quaternion& quaternion)
+{
+	Quaternion qVector = { vector.x, vector.y, vector.z, 0.0f };
+	Quaternion qConjugate = { -quaternion.x, -quaternion.y, -quaternion.z, quaternion.w };
+	Quaternion qResult = Multiply(Multiply(quaternion, qVector), qConjugate);
+	return { qResult.x, qResult.y, qResult.z };
+}
+
+Matrix4x4 MakeRotateMatrix(const Quaternion& quaternion)
+{
+	Matrix4x4 matrix = {};
+
+	float xx = quaternion.x * quaternion.x;
+	float yy = quaternion.y * quaternion.y;
+	float zz = quaternion.z * quaternion.z;
+	float xy = quaternion.x * quaternion.y;
+	float xz = quaternion.x * quaternion.z;
+	float yz = quaternion.y * quaternion.z;
+	float wx = quaternion.w * quaternion.x;
+	float wy = quaternion.w * quaternion.y;
+	float wz = quaternion.w * quaternion.z;
+
+	matrix.m[0][0] = 1.0f - 2.0f * (yy + zz);
+	matrix.m[0][1] = 2.0f * (xy - wz);
+	matrix.m[0][2] = 2.0f * (xz + wy);
+	matrix.m[0][3] = 0.0f;
+
+	matrix.m[1][0] = 2.0f * (xy + wz);
+	matrix.m[1][1] = 1.0f - 2.0f * (xx + zz);
+	matrix.m[1][2] = 2.0f * (yz - wx);
+	matrix.m[1][3] = 0.0f;
+
+	matrix.m[2][0] = 2.0f * (xz - wy);
+	matrix.m[2][1] = 2.0f * (yz + wx);
+	matrix.m[2][2] = 1.0f - 2.0f * (xx + yy);
+	matrix.m[2][3] = 0.0f;
+
+	matrix.m[3][0] = 0.0f;
+	matrix.m[3][1] = 0.0f;
+	matrix.m[3][2] = 0.0f;
+	matrix.m[3][3] = 1.0f;
+
+	matrix = Transpose(matrix);
+
+	return matrix;
+}
+
+float Dot(const Quaternion& q0, const Quaternion& q1)
+{
+	return q0.x * q1.x + q0.y * q1.y + q0.z * q1.z + q0.w * q1.w;
+}
+
+Quaternion Slerp(const Quaternion& q0, const Quaternion& q1, float t)
+{
+	// クォータニオンの内積を計算
+	float dot = Dot(q0, q1);
+
+	// クォータニオンが反対向きの場合、内積が負になるので符号を反転
+	const float THRESHOLD = 0.9995f;
+	if (dot < 0.0f) {
+		dot = -dot;
+		Quaternion negQ1 = { -q1.x, -q1.y, -q1.z, -q1.w };
+		return Slerp(q0, negQ1, t);
+	}
+
+	// 内積が閾値以上の場合、線形補間を使用
+	if (dot > THRESHOLD) {
+		Quaternion result = {
+			q0.x + t * (q1.x - q0.x),
+			q0.y + t * (q1.y - q0.y),
+			q0.z + t * (q1.z - q0.z),
+			q0.w + t * (q1.w - q0.w)
+		};
+		// 正規化
+		float norm = std::sqrt(result.x * result.x + result.y * result.y + result.z * result.z + result.w * result.w);
+		return { result.x / norm, result.y / norm, result.z / norm, result.w / norm };
+	}
+
+	// 角度を計算
+	float theta_0 = std::acos(dot);  // θ0 = angle between input vectors
+	float theta = theta_0 * t;       // θ = angle between q0 and result
+	float sin_theta = std::sin(theta); // Compute this value only once
+	float sin_theta_0 = std::sin(theta_0); // Compute this value only once
+
+	float s0 = std::cos(theta) - dot * sin_theta / sin_theta_0;  // s0 = sin((1 - t) * theta) / sin(theta)
+	float s1 = sin_theta / sin_theta_0; // s1 = sin(t * theta) / sin(theta)
+
+	return {
+		s0 * q0.x + s1 * q1.x,
+		s0 * q0.y + s1 * q1.y,
+		s0 * q0.z + s1 * q1.z,
+		s0 * q0.w + s1 * q1.w
+	};
+}

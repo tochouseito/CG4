@@ -57,3 +57,32 @@ Vector3 Cross(const Vector3& v1, const Vector3& v2);
 float Dot(const Vector3& v1, const Vector3& v2);
 bool IsCollision(const Vector3& center, const AABB& aabb);
 Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m);
+
+Matrix4x4 MakeRotateAxisAngle(const Vector3& axis, float angle);
+Matrix4x4 DirectionToDirection(const Vector3& from, const Vector3& to);
+
+// Quaternionの積
+Quaternion Multiply(const Quaternion& lhs, const Quaternion& rhs);
+// 単位Quaternionを返す
+Quaternion IdentityQuaternion();
+
+// 共役Quaternionを返す
+Quaternion Conjugate(const Quaternion& quaternion);
+// Quaternionのnormを返す
+float Norm(const Quaternion& quaternion);
+// 正規化したQuaternionを返す
+Quaternion Normalize(const Quaternion& quaternion);
+// 逆Quaternionを返す
+Quaternion Inverse(const Quaternion& quaternion);
+// 任意軸回転を表すQuaternionの生成
+Quaternion MakeRotateAxisAngleQuaternion(
+	const Vector3& axis, float angle);
+// ベクトルをQuaternionで回転させたけっかのベクトルを求める
+Vector3 RotateVector(const Vector3& vector, const Quaternion&
+	quaternion);
+// Quaternionから回転行列を求める
+Matrix4x4 MakeRotateMatrix(const Quaternion& quaternion);
+// クォータニオンの内積を計算
+float Dot(const Quaternion& q0, const Quaternion& q1);
+// 球面線形補間
+Quaternion Slerp(const Quaternion& q0, const Quaternion& q1, float t);

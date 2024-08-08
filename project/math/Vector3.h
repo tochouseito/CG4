@@ -9,6 +9,12 @@ struct Vector3 final {
 	float y;
 	float z;
 
+	// 等号演算子
+	bool operator==(const Vector3& other) const { return x == other.x && y == other.y && z == other.z; }
+
+	// 不等号演算子
+	bool operator!=(const Vector3& other) const { return !(*this == other); }
+
 	Vector3& operator+=(const Vector3& other) {
 		x += other.x;
 		y += other.y;
@@ -17,7 +23,8 @@ struct Vector3 final {
 	}
 
 	Vector3 operator+(const Vector3& other) const { return { x + other.x, y + other.y, z + other.z }; }
-
+	// 負号演算子のオーバーロード
+	Vector3 operator-() const { return { -x, -y, -z }; }
 	Vector3 operator-(const Vector3& other) const { return { x - other.x, y - other.y, z - other.z }; }
 
 	Vector3 operator*(const float& other) const { return { x * other, y * other, z * other }; }
