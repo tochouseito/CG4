@@ -1,6 +1,7 @@
 #pragma once
 #include"Vector3.h"
 #include"Color.h"
+#include"mathShapes.h"
 #include"Matrix4x4.h"
 #include<d3d12.h>
 #include<wrl.h>
@@ -32,6 +33,14 @@ public:
 	Matrix4x4 matWorld_ = { 0.0f };
 
 	Matrix4x4 localMatrix_ = { 0.0f };
+
+	Quaternion quaternion_ = { 0.0f };
+
+	struct QuaternionTransform {
+		Vector3 scale;
+		Quaternion rotate;
+		Vector3 translate;
+	};
 	
 	Matrix4x4 rootMatrix_;
 	uint32_t numInstance_ = 0;

@@ -225,7 +225,7 @@ void GameScene::Update() {
 void GameScene::Draw() {
 	//plane_->Draw();
 	//axis_->Draw();
-	//sphere_->Draw();
+	sphere_->Draw();
 	//primitive_->Draw();
 	//particles_->Draw();
 	/*パーティクルマネージャの描画*/

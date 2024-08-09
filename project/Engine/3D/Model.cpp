@@ -317,11 +317,18 @@ Model::Node Model::ReadNode(aiNode* node) {
 	Node result;
 	aiMatrix4x4 aiLocalMatrix = node->mTransformation;// nodeのlocalMatrixを取得
 	aiLocalMatrix.Transpose();// 列ベクトルを行ベクトルに転置
-	for (uint32_t mindex = 0; mindex < 4; ++mindex) {
+	/*for (uint32_t mindex = 0; mindex < 4; ++mindex) {
 		for (uint32_t index = 0; index < 4; ++index) {
 			result.localMatrix.m[mindex][index] = aiLocalMatrix[mindex][index];
 		}
-	}
+	}*/
+	aiVector3D scale, translate;
+	aiQuaternion rotate;
+	node->mTransformation.Decompose(scale, rotate, translate);// assimpの行列からSRTを抽出する関数を利用
+	result.transform.scale = { scale.x,scale.y,scale.z };// scaleはそのまま
+	result.transform.rotate = { rotate.x,-rotate.y,-rotate.z,rotate.w };// x軸を反転。さらに回転方向が逆なので軸を反転させる
+	result.transform.translate = { -translate.x,translate.y,translate.z };// x軸を反転
+	result.localMatrix = MakeAffineMatrix(result.transform.scale, result.transform.rotate, result.transform.translate);
 	result.name = node->mName.C_Str();// Node名を格納
 	result.children.resize(node->mNumChildren);// 子供の数だけ確保
 	for (uint32_t childIndex = 0; childIndex < node->mNumChildren; ++childIndex) {
