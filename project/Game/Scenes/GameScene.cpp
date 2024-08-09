@@ -62,7 +62,7 @@ void GameScene::Initialize() {
 	plane_->Initialize(planeModel_, textureHandle_[0], &viewProjection_);
 
 	/*3D軸モデル*/
-	axisModel_ = Model::LordModel("axis.obj");
+	axisModel_ = Model::LordModel("walk.gltf");
 	axis_ = new axis();
 	axis_->Initialize(axisModel_, textureHandle_[0], &viewProjection_);
 
@@ -224,7 +224,7 @@ void GameScene::Update() {
 
 void GameScene::Draw() {
 	//plane_->Draw();
-	//axis_->Draw();
+	axis_->Draw();
 	sphere_->Draw();
 	//primitive_->Draw();
 	//particles_->Draw();

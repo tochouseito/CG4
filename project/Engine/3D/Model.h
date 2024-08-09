@@ -11,6 +11,7 @@
 #include<unordered_map>
 #include"mathShapes.h"
 #include<map>
+#include<optional>
 
 // external
 #include<assimp/Importer.hpp>
@@ -71,6 +72,20 @@ public:
 		// NodeAnimationの集合。Node名で引けるようにしておく
 		std::map<std::string, NodeAnimation> nodeAnimations;
 	};
+	struct Joint {
+		WorldTransform::QuaternionTransform transform;// Transform情報
+		Matrix4x4 localMatrix;// localMatrix
+		Matrix4x4 skeletonSpaceMatrix;// skeletonSpaceでの変換行列
+		std::string name;// 名前
+		std::vector<int32_t> children;// 子JointのIndexのリストいなければ空
+		int32_t index; // 自身のIndex
+		std::optional<int32_t> parent;// 親JointのIndex。いなければnull
+	};
+	struct Skeleton {
+		int32_t root;// RootJointのIndex
+		std::map<std::string, int32_t> jointMap;// Join名とIndexとの辞書
+		std::vector<Joint> joints;// 所属しているジョイント
+	};
 public:
 	
 	
@@ -118,6 +133,16 @@ public:
 	Vector3 CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time);
 
 	Quaternion CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time);
+
+	Skeleton CreateSkeleton(const Node& rootNode);
+
+	int32_t CreateJoint(const Node& node,
+		const std::optional<int32_t>& parent,
+		std::vector<Joint>& joints);
+
+	void SkeletonUpdata(Skeleton& skeleton);
+
+	void ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime);
 
 public:/*getter*/
 	Material* GetMaterial() { return material_; }

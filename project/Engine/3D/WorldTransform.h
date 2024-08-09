@@ -36,6 +36,8 @@ public:
 
 	Quaternion quaternion_ = { 0.0f };
 
+	Matrix4x4 skeletonSpaceMatrix;// skeletonSpaceでの変換行列
+
 	struct QuaternionTransform {
 		Vector3 scale;
 		Quaternion rotate;
