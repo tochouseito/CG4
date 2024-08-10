@@ -14,6 +14,7 @@ void axis::Initialize(Model* model, std::string textureHandle, ViewProjection* v
 	viewProjection_ = viewProjection;
 	/*ワールドトランスフォームの初期化*/
 	worldTransform_.Initialize();
+	worldTransform_.rootMatrix_ = model_->GetModelData()->rootNode.localMatrix;
 }
 
 /// <summary>

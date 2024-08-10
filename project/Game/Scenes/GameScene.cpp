@@ -108,7 +108,7 @@ void GameScene::Initialize() {
 
 	/*bunnyModel_ = Model::LordModel("bunny.obj");
 	bunny_ = new BunnyModel();
-	bunny_->Initialize(bunnyModel_, textureHandle_[0], &viewProjection_);
+	bunny_->Initialize(bunnyModel_, textureHandle_[0], &viewProjection_);*/
 
 	multiMaterialModel_ = Model::LordModel("multiMaterial.obj");
 	multiMaterial_ = new multiMaterialModel();
@@ -118,7 +118,7 @@ void GameScene::Initialize() {
 	multiMesh_ = new multiMeshModel();
 	multiMesh_->Initialize(multiMeshModel_, textureHandle_[0], &viewProjection_);
 
-	suzanneModel_ = Model::LordModel("suzanne.obj");
+	/*suzanneModel_ = Model::LordModel("suzanne.obj");
 	suzanne_ = new suzanne();
 	suzanne_->Initialize(suzanneModel_, textureHandle_[0], &viewProjection_);
 
@@ -190,10 +190,10 @@ void GameScene::Update() {
 	/*パーティクルマネージャの更新*/
 	//particleManager_->Update();
 	//emitterManager_->Update();
-	/*bunny_->Updata();
+	/*bunny_->Updata();*/
 	multiMaterial_->Updata();
 	multiMesh_->Updata();
-	suzanne_->Updata();
+	/*suzanne_->Updata();
 	utahTeapot_->Updata();*/
 	animatedCube_->Updata();
 	ImGui::Begin("HSV");
@@ -233,8 +233,8 @@ void GameScene::Draw() {
 	//emitterManager_->Draw();
 	//sprite_->Draw();
 	//bunny_->Draw();
-	//multiMaterial_->Draw();
-	//multiMesh_->Draw();
+	multiMaterial_->Draw();
+	multiMesh_->Draw();
 	//suzanne_->Draw();
 	//utahTeapot_->Draw();
 	animatedCube_->Draw();
