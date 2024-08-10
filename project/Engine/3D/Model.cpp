@@ -375,13 +375,14 @@ Model::OBJModelData Model::LoadObjFile(const std::string& directoryPath, const s
 }
 Model::Node Model::ReadNode(aiNode* node) {
 	Node result;
+	Node result2;
 	aiMatrix4x4 aiLocalMatrix = node->mTransformation;// nodeのlocalMatrixを取得
 	aiLocalMatrix.Transpose();// 列ベクトルを行ベクトルに転置
-	/*for (uint32_t mindex = 0; mindex < 4; ++mindex) {
+	for (uint32_t mindex = 0; mindex < 4; ++mindex) {
 		for (uint32_t index = 0; index < 4; ++index) {
-			result.localMatrix.m[mindex][index] = aiLocalMatrix[mindex][index];
+			result2.localMatrix.m[mindex][index] = aiLocalMatrix[mindex][index];
 		}
-	}*/
+	}
 	aiVector3D scale, translate;
 	aiQuaternion rotate;
 	node->mTransformation.Decompose(scale, rotate, translate);// assimpの行列からSRTを抽出する関数を利用

@@ -62,7 +62,7 @@ void GameScene::Initialize() {
 	plane_->Initialize(planeModel_, textureHandle_[0], &viewProjection_);
 
 	/*3D軸モデル*/
-	axisModel_ = Model::LordModel("walk.gltf");
+	axisModel_ = Model::LordModel("plane.gltf");
 	axis_ = new axis();
 	axis_->Initialize(axisModel_, textureHandle_[0], &viewProjection_);
 
