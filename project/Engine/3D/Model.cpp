@@ -85,14 +85,14 @@ Quaternion Model::CalculateValue(const std::vector<KeyframeQuaternion>& keyframe
 	return (*keyframes.rbegin()).value;
 }
 
-Model::Skeleton Model::CreateSkeleton(const Node& rootNode)
+Model::Skeleton* Model::CreateSkeleton(const Node& rootNode)
 {
-	Skeleton skeleton;
-	skeleton.root = CreateJoint(rootNode, {}, skeleton.joints);
+	Skeleton* skeleton=new Skeleton();
+	skeleton->root = CreateJoint(rootNode, {}, skeleton->joints);
 
 	// 名前とindexのマッピングを行いアクセスしやすくする
-	for (const Joint& joint : skeleton.joints) {
-		skeleton.jointMap.emplace(joint.name, joint.index);
+	for (const Joint& joint : skeleton->joints) {
+		skeleton->jointMap.emplace(joint.name, joint.index);
 	}
 	return skeleton;
 }
@@ -119,24 +119,24 @@ int32_t Model::CreateJoint(const Node& node, const std::optional<int32_t>& paren
 	*/
 }
 
-void Model::SkeletonUpdata(Skeleton& skeleton)
+void Model::SkeletonUpdata(Skeleton* skeleton)
 {
 	// すべてのJointを更新。親が若いので通常ループで処理可能になっている
-	for (Joint& joint : skeleton.joints) {
+	for (Joint& joint : skeleton->joints) {
 		joint.localMatrix = MakeAffineMatrix(joint.transform.scale, joint.transform.rotate, joint.transform.translate);
 		if (joint.parent) {
-			joint.skeletonSpaceMatrix = joint.localMatrix * skeleton.joints[*joint.parent].skeletonSpaceMatrix;
+			joint.skeletonSpaceMatrix = joint.localMatrix * skeleton->joints[*joint.parent].skeletonSpaceMatrix;
 		} else {// 親がいないのでlocalMatrixとskeletonSpaceMatrixは一致する
 			joint.skeletonSpaceMatrix = joint.localMatrix;
 		}
 	}
 }
 
-void Model::ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime)
+void Model::ApplyAnimation(Skeleton* skeleton, const Animation* animation, float animationTime)
 {
-	for (Joint& joint : skeleton.joints) {
+	for (Joint& joint : skeleton->joints) {
 		// 対象のJointのAnimationがあれば、値の適用を行う。下記のif文はC++17から可能になった初期化付きif文
-		if (auto it = animation.nodeAnimations.find(joint.name); it != animation.nodeAnimations.end()) {
+		if (auto it = animation->nodeAnimations.find(joint.name); it != animation->nodeAnimations.end()) {
 			const NodeAnimation& rootNodeAnimation = (*it).second;
 			joint.transform.translate = CalculateValue(rootNodeAnimation.translate.keyframes, animationTime);
 			joint.transform.rotate = CalculateValue(rootNodeAnimation.rotate.keyframes, animationTime);
@@ -424,12 +424,12 @@ Model::ModelData*  Model::LoadModelFile(const std::string& directoryPath, const 
 	/// 名前被りを止める処理をここに実装
 	/// 
 	// 子ノードがないなら親ノード名だけ格納
-	if (modelData->rootNode.children.empty()) {
+	/*if (modelData->rootNode.children.empty()) {
 		modelData->names.push_back(modelData->rootNode.name.c_str());
 	}
 	for (uint32_t NameIndex = 0; NameIndex < modelData->rootNode.children.size(); ++NameIndex) {
 		modelData->names.push_back(modelData->rootNode.children[NameIndex].name.c_str());
-	}
+	}*/
 	// meshを解析する
 	for (uint32_t meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex) {
 		aiMesh* mesh = scene->mMeshes[meshIndex];
@@ -437,6 +437,7 @@ Model::ModelData*  Model::LoadModelFile(const std::string& directoryPath, const 
 		//assert(mesh->HasTextureCoords(0));// TexcoordがないMeshは今回は非対応
 		//modelData.object[scene->mMeshes[meshIndex]->mName.C_Str()];
 		std::string meshName = mesh->mName.C_Str();
+		modelData->names.push_back(meshName);
 		modelData->object[meshName].useTexture = mesh->HasTextureCoords(0);
 		// ここからMeshの中身(Face)の解析を行っていく
 		for (uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; ++faceIndex) {

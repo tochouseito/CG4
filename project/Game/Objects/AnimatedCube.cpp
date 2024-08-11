@@ -14,19 +14,25 @@ void AnimatedCube::Initialize(Model* model, std::string textureHandle, ViewProje
 	viewProjection_ = viewProjection;
 	/*ワールドトランスフォームの初期化*/
 	worldTransform_.Initialize();
-	model_->SetAnimation(animation);
+	//model_->SetAnimation(animation);
+	//model_->CreateSkeleton(model_->GetModelData()->rootNode);
+	skeleton_ = model_->CreateSkeleton(model_->GetModelData()->rootNode);
+	animation_ = animation;
+	model_->GetMaterial()->GetMaterialData()->enableLighting = true;
 }
 
 void AnimatedCube::Updata()
 {
 	animationTime += 1.0f / 60.0f;// 時刻を進める。1/60で固定してあるが、計測した時間を使って可変フレーム対応するほうが望ましい
-	animationTime = std::fmod(animationTime, model_->GetAnimation()->duration);
-	Model::NodeAnimation& rootNodeAnimation = model_->GetAnimation()->nodeAnimations[model_->GetModelData()->rootNode.name];// rootNodeのAnimationを取得
-	Vector3 translate = model_->CalculateValue(rootNodeAnimation.translate.keyframes, animationTime);// 指定時刻の値を取得。
-	Quaternion rotate = model_->CalculateValue(rootNodeAnimation.rotate.keyframes, animationTime);
-	Vector3 scale = model_->CalculateValue(rootNodeAnimation.scale.keyframes, animationTime);
-	Matrix4x4 localMatrix = MakeAffineMatrix(scale, rotate, translate);
-	worldTransform_.localMatrix_ = localMatrix;
+	animationTime = std::fmod(animationTime, animation_->duration);
+	//Model::NodeAnimation& rootNodeAnimation = model_->GetAnimation()->nodeAnimations[model_->GetModelData()->rootNode.name];// rootNodeのAnimationを取得
+	//Vector3 translate = model_->CalculateValue(rootNodeAnimation.translate.keyframes, animationTime);// 指定時刻の値を取得。
+	//Quaternion rotate = model_->CalculateValue(rootNodeAnimation.rotate.keyframes, animationTime);
+	//Vector3 scale = model_->CalculateValue(rootNodeAnimation.scale.keyframes, animationTime);
+	//Matrix4x4 localMatrix = MakeAffineMatrix(scale, rotate, translate);
+	//worldTransform_.localMatrix_ = localMatrix;
+	model_->ApplyAnimation(skeleton_, animation_, animationTime);
+	model_->SkeletonUpdata(skeleton_);
 #ifdef _DEBUG
 	// ImGuiフレーム開始
 	ImGui::Begin("3Dobjects");
@@ -38,8 +44,8 @@ void AnimatedCube::Updata()
 	ImGui::End();
 #endif
 	/*行列を定数バッファに更新、転送*/
-	//worldTransform_.UpdataMatrix();
-	worldTransform_.UpdataAnimationMat();
+	worldTransform_.UpdataMatrix();
+	//worldTransform_.UpdataAnimationMat();
 	//worldTransform_.TransferMatrix();
 }
 

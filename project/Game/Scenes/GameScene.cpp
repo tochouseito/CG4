@@ -62,7 +62,7 @@ void GameScene::Initialize() {
 	plane_->Initialize(planeModel_, textureHandle_[0], &viewProjection_);
 
 	/*3D軸モデル*/
-	axisModel_ = Model::LordModel("plane.gltf");
+	axisModel_ = Model::LordModel("axis.obj");
 	axis_ = new axis();
 	axis_->Initialize(axisModel_, textureHandle_[0], &viewProjection_);
 
@@ -110,13 +110,13 @@ void GameScene::Initialize() {
 	bunny_ = new BunnyModel();
 	bunny_->Initialize(bunnyModel_, textureHandle_[0], &viewProjection_);*/
 
-	multiMaterialModel_ = Model::LordModel("multiMaterial.obj");
+	/*multiMaterialModel_ = Model::LordModel("multiMaterial.obj");
 	multiMaterial_ = new multiMaterialModel();
 	multiMaterial_->Initialize(multiMaterialModel_, textureHandle_[0], &viewProjection_);
 
 	multiMeshModel_ = Model::LordModel("multiMesh.obj");
 	multiMesh_ = new multiMeshModel();
-	multiMesh_->Initialize(multiMeshModel_, textureHandle_[0], &viewProjection_);
+	multiMesh_->Initialize(multiMeshModel_, textureHandle_[0], &viewProjection_);*/
 
 	/*suzanneModel_ = Model::LordModel("suzanne.obj");
 	suzanne_ = new suzanne();
@@ -126,8 +126,8 @@ void GameScene::Initialize() {
 	utahTeapot_ = new UtahTeapotModel();
 	utahTeapot_->Initialize(UtahTeapotModel_, textureHandle_[0], &viewProjection_);*/
 
-	animatedCubeModel_ = Model::LordModel("AnimatedCube.gltf");
-	animation_ = Model::LordAnimationFile("./Resources", "AnimatedCube.gltf");
+	animatedCubeModel_ = Model::LordModel("Walk.gltf");
+	animation_ = Model::LordAnimationFile("./Resources", "Walk.gltf");
 	animatedCube_ = new AnimatedCube();
 	animatedCube_->Initialize(animatedCubeModel_, textureHandle_[0], &viewProjection_, animation_);
 }
@@ -191,8 +191,8 @@ void GameScene::Update() {
 	//particleManager_->Update();
 	//emitterManager_->Update();
 	/*bunny_->Updata();*/
-	multiMaterial_->Updata();
-	multiMesh_->Updata();
+	/*multiMaterial_->Updata();
+	multiMesh_->Updata();*/
 	/*suzanne_->Updata();
 	utahTeapot_->Updata();*/
 	animatedCube_->Updata();
@@ -225,7 +225,7 @@ void GameScene::Update() {
 void GameScene::Draw() {
 	//plane_->Draw();
 	axis_->Draw();
-	sphere_->Draw();
+	//sphere_->Draw();
 	//primitive_->Draw();
 	//particles_->Draw();
 	/*パーティクルマネージャの描画*/
@@ -233,8 +233,8 @@ void GameScene::Draw() {
 	//emitterManager_->Draw();
 	//sprite_->Draw();
 	//bunny_->Draw();
-	multiMaterial_->Draw();
-	multiMesh_->Draw();
+	//multiMaterial_->Draw();
+	//multiMesh_->Draw();
 	//suzanne_->Draw();
 	//utahTeapot_->Draw();
 	animatedCube_->Draw();

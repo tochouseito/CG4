@@ -134,15 +134,15 @@ public:
 
 	Quaternion CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time);
 
-	Skeleton CreateSkeleton(const Node& rootNode);
+	Skeleton* CreateSkeleton(const Node& rootNode);
 
 	int32_t CreateJoint(const Node& node,
 		const std::optional<int32_t>& parent,
 		std::vector<Joint>& joints);
 
-	void SkeletonUpdata(Skeleton& skeleton);
+	void SkeletonUpdata(Skeleton* skeleton);
 
-	void ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime);
+	void ApplyAnimation(Skeleton* skeleton, const Animation* animation, float animationTime);
 
 public:/*getter*/
 	Material* GetMaterial() { return material_; }
@@ -155,6 +155,9 @@ public:/*getter*/
 	}
 	ModelData* GetModelData() { 
 		return modelData_;
+	}
+	Skeleton* GetSkeleton() {
+		return skeleton_;
 	}
 public:/*setter*/
 	void SetBlendMode(uint32_t blendMode) { current_blend = blendMode; }
@@ -177,6 +180,7 @@ private:
 	//std::unordered_map<std::string, OBJModelData> modelData_;
 	ModelData* modelData_;
 	Animation* animation_;
+	Skeleton* skeleton_;
 	// 現在選択されているアイテムのインデックス
 	uint32_t current_blend = 0;
 	//UINT vertices = 0;
