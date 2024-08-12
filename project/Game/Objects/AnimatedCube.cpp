@@ -14,7 +14,7 @@ void AnimatedCube::Initialize(Model* model, std::string textureHandle, ViewProje
 	viewProjection_ = viewProjection;
 	/*ワールドトランスフォームの初期化*/
 	worldTransform_.Initialize();
-	//model_->SetAnimation(animation);
+	model_->SetAnimation(animation);
 	//model_->CreateSkeleton(model_->GetModelData()->rootNode);
 	skeleton_ = model_->CreateSkeleton(model_->GetModelData()->rootNode);
 	animation_ = animation;
