@@ -34,6 +34,9 @@ public:
 		Microsoft::WRL::ComPtr < ID3D12Resource> vertexResource;
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 		UINT vertices = 0;
+		uint32_t* indexData = nullptr;
+		Microsoft::WRL::ComPtr < ID3D12Resource> indexResource;
+		D3D12_INDEX_BUFFER_VIEW indexBufferView{};
 	};
 public: // メンバ関数
 	
@@ -62,15 +65,26 @@ public: // メンバ関数
 
 	/*メッシュデータのGetter*/
 	VertexData* GetData(const std::string& objectName) {return meshData_[objectName].vertexData; }
+	MeshData GetMeshData(const std::string& objectName) { return meshData_[objectName]; }
+	D3D12_INDEX_BUFFER_VIEW* GetIndexBufferView(const std::string& objectName) {
+		return &meshData_[objectName].indexBufferView;
+	}
 	void SetDataVertices(UINT vertices, const std::string& name) { meshData_[name].vertices = vertices; }
 	void CreateDateResource(size_t vertices, const std::string& name);
-	D3D12_VERTEX_BUFFER_VIEW* GetVertexBufferView(const std::string& name) {return &meshData_[name].vertexBufferView; }
-	UINT GetDataVertices(const std::string& name) { return meshData_[name].vertices; }
+	D3D12_VERTEX_BUFFER_VIEW* GetVertexBufferView(const std::string& name) {
+		return &meshData_[name].vertexBufferView; 
+	}
+	UINT GetDataVertices(const std::string& name) {
+		
+		return meshData_[name].vertices;
+	}
 
 	void CreateBall(uint32_t Subdivision);
 
 	/*デフォルトオブジェクトの頂点リソースを作る*/
 	void CreateObjectVertex(Object Object);
+
+	void CreateModelIndexResource(size_t indices, const std::string& name);
 
 	/// <summary>
 	/// 頂点リソースを作る
@@ -93,5 +107,8 @@ private: // メンバ変数
 	uint32_t* indexDataSphere_ = nullptr;
 	Object object_ = Object::kBox;
 	UINT vertices_ = 0;
+	uint32_t* indexData_ = nullptr;
+	Microsoft::WRL::ComPtr < ID3D12Resource> indexResource_;
+	D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
 };
 

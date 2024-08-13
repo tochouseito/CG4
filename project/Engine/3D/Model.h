@@ -35,6 +35,7 @@ public:
 	};
 	struct ObjectData {
 		std::vector < Mesh::VertexData>vertices;
+		std::vector<uint32_t> indices;
 		Material::OBJMaterialData material;
 		bool useTexture = false;
 	};
@@ -86,6 +87,7 @@ public:
 		std::map<std::string, int32_t> jointMap;// Join名とIndexとの辞書
 		std::vector<Joint> joints;// 所属しているジョイント
 	};
+
 public:
 	
 	
@@ -144,6 +146,8 @@ public:
 
 	void ApplyAnimation(Skeleton* skeleton, const Animation* animation, float animationTime);
 
+
+
 public:/*getter*/
 	Material* GetMaterial() { return material_; }
 	Mesh* GetMesh() { return mesh_; }
@@ -159,6 +163,7 @@ public:/*getter*/
 	Skeleton* GetSkeleton() {
 		return skeleton_;
 	}
+	const uint32_t GetIndices(const std::string& objectName)const { return modelData_->object[objectName].indices.size(); }
 public:/*setter*/
 	void SetBlendMode(uint32_t blendMode) { current_blend = blendMode; }
 	void SetAnimation(Animation* animation) { animation_ = animation; }
@@ -173,7 +178,7 @@ private:
 	SpotLight* spotLight_;
 	DirectionalLight* directionalLight_;
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU_[2];
-	bool useMonsterBall = true;
+	bool useMonsterBall = false;
 	//OBJModelData modelData_;
 	std::string textureHandle_;
 	//std::unordered_map<std::string, ObjectData> modelData_;

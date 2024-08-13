@@ -225,6 +225,15 @@ void Mesh::CreateObjectVertex(Object Object) {
 	}
 }
 
+void Mesh::CreateModelIndexResource(size_t indices, const std::string& name)
+{
+	meshData_[name].indexResource = DirectXCommon::GetInstance()->CreateBufferResource(DirectXCommon::GetInstance()->GetDevice(), sizeof(uint32_t) * indices);
+	meshData_[name].indexBufferView.BufferLocation = meshData_[name].indexResource->GetGPUVirtualAddress();
+	meshData_[name].indexBufferView.SizeInBytes = sizeof(uint32_t) * indices;
+	meshData_[name].indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+	meshData_[name].indexResource->Map(0, nullptr, reinterpret_cast<void**>(&meshData_[name].indexData));
+}
+
 void Mesh::CreateSpriteVertexResource(size_t vertices) {
 	vertexResource_ = DirectXCommon::GetInstance()->CreateBufferResource(DirectXCommon::GetInstance()->GetDevice(), sizeof(VertexData) * vertices);
 

@@ -160,6 +160,8 @@ void Model::Draw(WorldTransform& worldTransform,ViewProjection& viewProjection,
 	if (modelData_) {
 		for (std::string name : modelData_->names) {
 			commandList->IASetVertexBuffers(0, 1, mesh_->GetVertexBufferView(name));// VBVを設定
+			D3D12_INDEX_BUFFER_VIEW* v = mesh_->GetIndexBufferView(name);
+			commandList->IASetIndexBuffer(v);
 			if (useMonsterBall) {
 				commandList->IASetIndexBuffer(mesh_->GetIndexBufferView());// IBVを設定
 			}
@@ -179,7 +181,8 @@ void Model::Draw(WorldTransform& worldTransform,ViewProjection& viewProjection,
 			}
 			commandList->SetGraphicsRootDescriptorTable(1, worldTransform.GetSrvHandleGPU());
 			// 描画！(DrawCall/ドローコール)。３頂点で1つのインスタンス。インスタンスについては今後
-			commandList->DrawInstanced(static_cast<UINT>(mesh_->GetDataVertices(name)), 1, 0, 0);
+			//commandList->DrawInstanced(static_cast<UINT>(mesh_->GetDataVertices(name)), 1, 0, 0);
+			commandList->DrawIndexedInstanced(static_cast<UINT>(GetIndices(name)), 1, 0, 0, 0);
 		}
 	} else {
 		commandList->IASetVertexBuffers(0, 1, mesh_->GetVertexBufferView());// VBVを設定
@@ -211,10 +214,15 @@ Model* Model::LordModel(const std::string& filename) {
 	for (const std::string& name:model->modelData_->names) {
 		model->mesh_->SetDataVertices(static_cast<UINT>(model->modelData_->object[name].vertices.size()),name);
 		model->mesh_->CreateDateResource(model->modelData_->object[name].vertices.size(),name);
+		model->mesh_->CreateModelIndexResource(model->modelData_->object[name].indices.size(), name);
 		// 頂点データをリソースにコピー
 		std::memcpy(model->mesh_->GetData(name)
 			, model->modelData_->object[name].vertices.data(),
 			sizeof(Mesh::VertexData) * model->modelData_->object[name].vertices.size());
+		// 頂点データをリソースにコピー
+		std::memcpy(model->mesh_->GetMeshData(name).indexData
+			, model->modelData_->object[name].indices.data(),
+			sizeof(uint32_t) * model->modelData_->object[name].indices.size());
 	}
 	//model->mesh_->SetVertices(static_cast<UINT>(model->modelData_.vertices.size()));
 	//model->mesh_->CreateOBJVertexResource(model->modelData_.vertices.size());
@@ -439,32 +447,61 @@ Model::ModelData*  Model::LoadModelFile(const std::string& directoryPath, const 
 		std::string meshName = mesh->mName.C_Str();
 		modelData->names.push_back(meshName);
 		modelData->object[meshName].useTexture = mesh->HasTextureCoords(0);
-		// ここからMeshの中身(Face)の解析を行っていく
+
+		//modelData->object[meshName].vertices.resize(mesh->mNumVertices);// 最初に頂点数分のメモリを確保しておく
+		//// ここからMeshの中身(Face)の解析を行っていく
+		//for (uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; ++faceIndex) {
+		//	aiFace& face = mesh->mFaces[faceIndex];
+		//	assert(face.mNumIndices == 3);// 三角形のみサポート
+		//	// ここからFaceの中身(Vertex)の解析を行っていく
+		//	for (uint32_t element = 0; element < face.mNumIndices; ++element) {
+		//		uint32_t vertexIndex = face.mIndices[element];
+		//		aiVector3D& position = mesh->mVertices[vertexIndex];
+		//		aiVector3D& normal = mesh->mNormals[vertexIndex];
+		//		//aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
+		//		Mesh::VertexData vertex;
+		//		vertex.position = { position.x,position.y,position.z,1.0f };
+		//		vertex.normal = { normal.x,normal.y,normal.z };
+		//		//vertex.texcoord = { texcoord.x,texcoord.y };
+		//		// UV座標のチェックと設定
+		//		if (mesh->HasTextureCoords(0)) {
+		//			aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
+		//			vertex.texcoord = { texcoord.x, texcoord.y };
+		//		} else {
+		//			vertex.texcoord = { 0.0f, 0.0f }; // ダミーのUV座標
+		//		}
+		//		// aiProcess_MakeLeftHandedはz*=-1で、右手->左手に変換するので手動で対処
+		//		vertex.position.x *= -1.0f;
+		//		vertex.normal.x *= -1.0f;
+		//		/*データを追加*/
+		//		modelData->object[meshName].vertices.push_back(vertex);
+		//	}
+		//}
+		for (uint32_t vertexIndex = 0; vertexIndex < mesh->mNumVertices; ++vertexIndex) {
+			Mesh::VertexData vertex;
+			aiVector3D& position = mesh->mVertices[vertexIndex];
+			aiVector3D& normal = mesh->mNormals[vertexIndex];
+			// UV座標のチェックと設定
+			if (mesh->HasTextureCoords(0)) {
+				aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
+				vertex.texcoord = { texcoord.x, texcoord.y };
+			} else {
+				vertex.texcoord = { 0.0f, 0.0f }; // ダミーのUV座標
+			}
+			vertex.position = { position.x,position.y ,position.z,1.0f };
+			vertex.normal = { normal.x,normal.y ,normal.z };
+			vertex.position.x *= -1.0f;
+			vertex.normal.x *= -1.0f;
+			/*データを追加*/
+			modelData->object[meshName].vertices.push_back(vertex);
+		}
 		for (uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; ++faceIndex) {
 			aiFace& face = mesh->mFaces[faceIndex];
-			assert(face.mNumIndices == 3);// 三角形のみサポート
-			// ここからFaceの中身(Vertex)の解析を行っていく
+			assert(face.mNumIndices == 3);
+
 			for (uint32_t element = 0; element < face.mNumIndices; ++element) {
 				uint32_t vertexIndex = face.mIndices[element];
-				aiVector3D& position = mesh->mVertices[vertexIndex];
-				aiVector3D& normal = mesh->mNormals[vertexIndex];
-				//aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
-				Mesh::VertexData vertex;
-				vertex.position = { position.x,position.y,position.z,1.0f };
-				vertex.normal = { normal.x,normal.y,normal.z };
-				//vertex.texcoord = { texcoord.x,texcoord.y };
-				// UV座標のチェックと設定
-				if (mesh->HasTextureCoords(0)) {
-					aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
-					vertex.texcoord = { texcoord.x, texcoord.y };
-				} else {
-					vertex.texcoord = { 0.0f, 0.0f }; // ダミーのUV座標
-				}
-				// aiProcess_MakeLeftHandedはz*=-1で、右手->左手に変換するので手動で対処
-				vertex.position.x *= -1.0f;
-				vertex.normal.x *= -1.0f;
-				/*データを追加*/
-				modelData->object[meshName].vertices.push_back(vertex);
+				modelData->object[meshName].indices.push_back(vertexIndex);
 			}
 		}
 		// Assign material to the mesh

@@ -62,9 +62,9 @@ void GameScene::Initialize() {
 	plane_->Initialize(planeModel_, textureHandle_[0], &viewProjection_);
 
 	/*3D軸モデル*/
-	axisModel_ = Model::LordModel("axis.obj");
+	/*axisModel_ = Model::LordModel("axis.obj");
 	axis_ = new axis();
-	axis_->Initialize(axisModel_, textureHandle_[0], &viewProjection_);
+	axis_->Initialize(axisModel_, textureHandle_[0], &viewProjection_);*/
 
 	/*3D球モデル*/
 	sphereModel_ = Model::CreateSphere(32);
@@ -182,7 +182,7 @@ void GameScene::Update() {
 	ImGui::End();
 #endif // _DEBUG
 	plane_->Update();
-	axis_->Update();
+	//axis_->Update();
 	sphere_->Update();
 	//primitive_->Update();
 	sprite_->Update();
