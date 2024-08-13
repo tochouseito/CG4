@@ -12,11 +12,14 @@
 #include"mathShapes.h"
 #include<map>
 #include<optional>
+#include<array>
+#include<span>
 
 // external
 #include<assimp/Importer.hpp>
 #include<assimp/scene.h>
 #include<assimp/postprocess.h>
+const uint32_t kNumMaxInfluence = 4;
 class Model
 {
 public:
@@ -31,17 +34,6 @@ public:
 	struct OBJModelData {
 		std::vector < Mesh::VertexData>vertices;
 		Material::OBJMaterialData material;
-		Node rootNode;
-	};
-	struct ObjectData {
-		std::vector < Mesh::VertexData>vertices;
-		std::vector<uint32_t> indices;
-		Material::OBJMaterialData material;
-		bool useTexture = false;
-	};
-	struct ModelData {
-		std::unordered_map<std::string, ObjectData> object;
-		std::vector<std::string> names;
 		Node rootNode;
 	};
 	//struct KeyframeVector3 {
@@ -87,7 +79,44 @@ public:
 		std::map<std::string, int32_t> jointMap;// Join名とIndexとの辞書
 		std::vector<Joint> joints;// 所属しているジョイント
 	};
-
+	struct VertexWeightData {
+		float weight;
+		uint32_t vertexIndex;
+	};
+	struct JointWeightData {
+		Matrix4x4 inverseBindPoseMatrix;
+		std::vector<VertexWeightData> vertexWeights;
+	};
+	struct ObjectData {
+		std::map<std::string, JointWeightData>skinClusterData;
+		std::vector < Mesh::VertexData>vertices;
+		std::vector<uint32_t> indices;
+		Material::OBJMaterialData material;
+		bool useTexture = false;
+	};
+	struct ModelData {
+		std::unordered_map<std::string, ObjectData> object;
+		std::vector<std::string> names;
+		Node rootNode;
+	};
+	struct VertexInfluence {
+		std::array<float,kNumMaxInfluence>weights;
+		std::array<int32_t, kNumMaxInfluence>jointIndices;
+	};
+	struct WellForGPU {
+		Matrix4x4 skeletonSpaceMatrix;// 位置用
+		Matrix4x4 skeletonSpaceInverseTransposeMatrix;// 法線用
+	};
+	struct SkinCluster {
+		std::vector<Matrix4x4> inverseBindPoseMatrices;
+		Microsoft::WRL::ComPtr<ID3D12Resource> influenceResource;
+		D3D12_VERTEX_BUFFER_VIEW influenceBufferView;
+		std::span<VertexInfluence> mappedInfluence;
+		Microsoft::WRL::ComPtr<ID3D12Resource> paletteResource;
+		std::span<WellForGPU> mappedPalette;
+		std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE>paletteSrvHandle;
+		uint32_t srvIndex;
+	};
 public:
 	
 	
@@ -146,7 +175,10 @@ public:
 
 	void ApplyAnimation(Skeleton* skeleton, const Animation* animation, float animationTime);
 
+	SkinCluster* CreateSkinCluster(const Microsoft::WRL::ComPtr<ID3D12Device>& device,Skeleton* skeleton,
+		ObjectData& objectData);
 
+	void SkinClusterUpdata(SkinCluster* skinCluster,  Skeleton* skeleton);
 
 public:/*getter*/
 	Material* GetMaterial() { return material_; }
@@ -163,10 +195,14 @@ public:/*getter*/
 	Skeleton* GetSkeleton() {
 		return skeleton_;
 	}
-	const uint32_t GetIndices(const std::string& objectName)const { return modelData_->object[objectName].indices.size(); }
+	SkinCluster* GetSkinCluster() {
+		return skinCluster_;
+	}
+	const uint32_t GetIndices(const std::string& objectName)const { return static_cast<uint32_t>(modelData_->object[objectName].indices.size()); }
 public:/*setter*/
 	void SetBlendMode(uint32_t blendMode) { current_blend = blendMode; }
 	void SetAnimation(Animation* animation) { animation_ = animation; }
+	void SetSkinCluster(SkinCluster* skinCluster) { skinCluster_ = skinCluster; }
 private:/*メンバ変数*/
 	
 private:
@@ -186,6 +222,7 @@ private:
 	ModelData* modelData_;
 	Animation* animation_;
 	Skeleton* skeleton_;
+	SkinCluster* skinCluster_;
 	// 現在選択されているアイテムのインデックス
 	uint32_t current_blend = 0;
 	//UINT vertices = 0;

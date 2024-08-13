@@ -22,6 +22,7 @@ private:
 	WorldTransform worldTransform_;
 	Model::Animation* animation_=nullptr;
 	Model::Skeleton* skeleton_ = nullptr;
+	Model::SkinCluster* skinCluster= nullptr;
 	ViewProjection* viewProjection_ = nullptr;
 	Model* model_ = nullptr;
 	std::string textureHandle_;

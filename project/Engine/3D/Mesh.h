@@ -74,6 +74,9 @@ public: // メンバ関数
 	D3D12_VERTEX_BUFFER_VIEW* GetVertexBufferView(const std::string& name) {
 		return &meshData_[name].vertexBufferView; 
 	}
+	D3D12_VERTEX_BUFFER_VIEW GetVBV(const std::string& name) {
+		return meshData_[name].vertexBufferView;
+	}
 	UINT GetDataVertices(const std::string& name) {
 		
 		return meshData_[name].vertices;

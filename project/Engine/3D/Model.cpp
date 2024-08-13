@@ -9,6 +9,8 @@
 #include<random>
 #include<numbers>
 #include"Mymath.h"
+#include"SrvManager.h"
+#include<assert.h>
 Model::Model() {
 	material_ = new Material();
 	directionalLight_ = new DirectionalLight();
@@ -22,6 +24,7 @@ Model::~Model() {
 	delete directionalLight_;
 	delete pointLight_;
 	delete spotLight_;
+	delete skinCluster_;
 }
 
 /*平面オブジェクト*/
@@ -145,6 +148,66 @@ void Model::ApplyAnimation(Skeleton* skeleton, const Animation* animation, float
 	}
 }
 
+Model::SkinCluster* Model::CreateSkinCluster(const Microsoft::WRL::ComPtr<ID3D12Device>& device,  Skeleton* skeleton, 
+	ObjectData& objectData)
+{
+	SkinCluster* skinCluster=new SkinCluster();
+	/*palette用のResourceを確保*/
+	skinCluster->paletteResource = DirectXCommon::GetInstance()->CreateBufferResource(device.Get(), sizeof(WellForGPU) * skeleton->joints.size());
+	WellForGPU* mappedPalette = nullptr;
+	skinCluster->paletteResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedPalette));
+	skinCluster->mappedPalette = { mappedPalette,skeleton->joints.size() };// spanを使ってアクセスする
+	/*palette用のsrvを作成*/
+	skinCluster->srvIndex = SrvManager::GetInstance()->Allocate();
+	skinCluster->paletteSrvHandle.first = SrvManager::GetInstance()->GetCPUDescriptorHandle(skinCluster->srvIndex);
+	skinCluster->paletteSrvHandle.second = SrvManager::GetInstance()->GetGPUDescriptorHandle(skinCluster->srvIndex);
+	SrvManager::GetInstance()->CreateSRVforStructuredBuffer(skinCluster->srvIndex, skinCluster->paletteResource.Get(), static_cast<UINT>(skeleton->joints.size()), sizeof(WellForGPU));
+	/*influencey用のResourceを確保。頂点ごとにInfluence情報を追加できるようにする*/
+	skinCluster->influenceResource = DirectXCommon::GetInstance()->CreateBufferResource(device.Get(), sizeof(VertexInfluence) * objectData.vertices.size());
+	VertexInfluence* mappedInflence = nullptr;
+	skinCluster->influenceResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedInflence));
+	std::memset(mappedInflence, 0, sizeof(VertexInfluence) * objectData.vertices.size());// 0埋め。weightを0にしておく
+	skinCluster->mappedInfluence = { mappedInflence,objectData.vertices.size() };
+	/*Influence用のVBVを作成*/
+	skinCluster->influenceBufferView.BufferLocation = skinCluster->influenceResource->GetGPUVirtualAddress();
+	skinCluster->influenceBufferView.SizeInBytes = static_cast<UINT>(sizeof(VertexInfluence) * objectData.vertices.size());
+	skinCluster->influenceBufferView.StrideInBytes = sizeof(VertexInfluence);
+	/*InverseBindPoseMatrixの保存領域を作成*/
+	skinCluster->inverseBindPoseMatrices.resize(skeleton->joints.size());
+	std::generate(skinCluster->inverseBindPoseMatrices.begin(), skinCluster->inverseBindPoseMatrices.end(), []() { return MakeIdentity4x4(); });
+	/*ModelDataのSkinCluster情報を解析してInfluenceの中身を埋める*/
+	for (const auto& jointWeight : objectData.skinClusterData) {// ModelのSkinClusterの情報を解析
+		auto it = skeleton->jointMap.find(jointWeight.first);// jointWeight.firstはjoint名なので、skeletonに対象となるjointが含まれているか判断
+		if (it == skeleton->jointMap.end()) {// そんな名前のjointは存在しない、なので次に回す
+			continue;
+		}
+		/*(*it).secondにはJointのIndexが入っているので、該当のindexのInverseBindPoseMatrixを代入*/
+		skinCluster->inverseBindPoseMatrices[(*it).second] = jointWeight.second.inverseBindPoseMatrix;
+		for (const auto& vertexWeight : jointWeight.second.vertexWeights) {
+			auto& currentInfluence = skinCluster->mappedInfluence[vertexWeight.vertexIndex];// 該当のvertexIndexのinfluence情報を参照しておく
+			for (uint32_t index = 0; index < kNumMaxInfluence; ++index) {// 空いてるところに入れる
+				if (currentInfluence.weights[index] == 0.0f) {// weight==0が空いてる状態なので、その場所にweightとjointのIndexを代入
+					currentInfluence.weights[index] = vertexWeight.weight;
+					currentInfluence.jointIndices[index] = (*it).second;
+					break;
+				}
+			}
+		}
+	}
+	return skinCluster;
+}
+
+void Model::SkinClusterUpdata(SkinCluster* skinCluster, Skeleton* skeleton)
+{
+	for (size_t jointIndex = 0; jointIndex < skeleton->joints.size(); ++jointIndex) {
+		assert(jointIndex < skinCluster->inverseBindPoseMatrices.size());
+		skinCluster->mappedPalette[jointIndex].skeletonSpaceMatrix =
+			skinCluster->inverseBindPoseMatrices[jointIndex] * skeleton->joints[jointIndex].skeletonSpaceMatrix;
+		skinCluster->mappedPalette[jointIndex].skeletonSpaceInverseTransposeMatrix =
+			Transpose(Inverse(skinCluster->mappedPalette[jointIndex].skeletonSpaceMatrix));
+	}
+}
+
 /// <summary>
 /// 描画
 /// </summary>
@@ -159,7 +222,12 @@ void Model::Draw(WorldTransform& worldTransform,ViewProjection& viewProjection,
 	commandList->SetPipelineState(GraphicsPipelineState::GetPipelineState(current_blend));// PSOを設定
 	if (modelData_) {
 		for (std::string name : modelData_->names) {
-			commandList->IASetVertexBuffers(0, 1, mesh_->GetVertexBufferView(name));// VBVを設定
+			D3D12_VERTEX_BUFFER_VIEW vbvs[2] = {
+				mesh_->GetVBV(name),
+				skinCluster_->influenceBufferView,
+			};
+			//commandList->IASetVertexBuffers(0, 1, mesh_->GetVertexBufferView(name));// VBVを設定
+			commandList->IASetVertexBuffers(0, 2, vbvs);
 			D3D12_INDEX_BUFFER_VIEW* v = mesh_->GetIndexBufferView(name);
 			commandList->IASetIndexBuffer(v);
 			if (useMonsterBall) {
@@ -180,6 +248,7 @@ void Model::Draw(WorldTransform& worldTransform,ViewProjection& viewProjection,
 				commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetTextureHandle(textureHandle));
 			}
 			commandList->SetGraphicsRootDescriptorTable(1, worldTransform.GetSrvHandleGPU());
+			commandList->SetGraphicsRootDescriptorTable(7, skinCluster_->paletteSrvHandle.second);
 			// 描画！(DrawCall/ドローコール)。３頂点で1つのインスタンス。インスタンスについては今後
 			//commandList->DrawInstanced(static_cast<UINT>(mesh_->GetDataVertices(name)), 1, 0, 0);
 			commandList->DrawIndexedInstanced(static_cast<UINT>(GetIndices(name)), 1, 0, 0, 0);
@@ -211,6 +280,7 @@ Model* Model::LordModel(const std::string& filename) {
 	model->modelData_= LoadModelFile("./Resources", filename);
 	//model->modelData_.material.textureFilePath=TextureManager::GetInstance()->Load(model->modelData_.material.textureFilePath);
 	GraphicsPipelineState::GetInstance()->CreateGraphicsPipeline(DirectXCommon::GetInstance()->GetDevice());
+	GraphicsPipelineState::GetInstance()->CreateGraphicsPipelineSkinning(DirectXCommon::GetInstance()->GetDevice());
 	for (const std::string& name:model->modelData_->names) {
 		model->mesh_->SetDataVertices(static_cast<UINT>(model->modelData_->object[name].vertices.size()),name);
 		model->mesh_->CreateDateResource(model->modelData_->object[name].vertices.size(),name);
@@ -443,7 +513,7 @@ Model::ModelData*  Model::LoadModelFile(const std::string& directoryPath, const 
 		aiMesh* mesh = scene->mMeshes[meshIndex];
 		assert(mesh->HasNormals());// 法線がないMeshは今回は非対応
 		//assert(mesh->HasTextureCoords(0));// TexcoordがないMeshは今回は非対応
-		//modelData.object[scene->mMeshes[meshIndex]->mName.C_Str()];
+		//modelData->object[scene->mMeshes[meshIndex]->mName.C_Str()];
 		std::string meshName = mesh->mName.C_Str();
 		modelData->names.push_back(meshName);
 		modelData->object[meshName].useTexture = mesh->HasTextureCoords(0);
@@ -495,6 +565,7 @@ Model::ModelData*  Model::LoadModelFile(const std::string& directoryPath, const 
 			/*データを追加*/
 			modelData->object[meshName].vertices.push_back(vertex);
 		}
+		/*Index解析*/
 		for (uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; ++faceIndex) {
 			aiFace& face = mesh->mFaces[faceIndex];
 			assert(face.mNumIndices == 3);
@@ -502,6 +573,25 @@ Model::ModelData*  Model::LoadModelFile(const std::string& directoryPath, const 
 			for (uint32_t element = 0; element < face.mNumIndices; ++element) {
 				uint32_t vertexIndex = face.mIndices[element];
 				modelData->object[meshName].indices.push_back(vertexIndex);
+			}
+		}
+		for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex) {
+			aiBone* bone = mesh->mBones[boneIndex];// AssimpではJointをBoneと呼んでいる
+			std::string jointName = bone->mName.C_Str();
+			JointWeightData& jointWeightData = modelData->object[meshName].skinClusterData[jointName];
+
+			aiMatrix4x4 bindPoseMatrixAssimp = bone->mOffsetMatrix.Inverse();// BindPoseMatrixに戻す
+			aiVector3D scale, translate;
+			aiQuaternion rotate;
+			bindPoseMatrixAssimp.Decompose(scale, rotate, translate);// 成分を抽出
+			/*左手系のBindPoseMatrixを作る*/
+			Matrix4x4 bindPoseMatrix = MakeAffineMatrix(
+				{ scale.x,scale.y,scale.z }, { rotate.x,-rotate.y,-rotate.z,rotate.w }, { -translate.x,translate.y,translate.z });
+			/*InverseBindPoseMatrixにする*/
+			jointWeightData.inverseBindPoseMatrix = Inverse(bindPoseMatrix);
+
+			for (uint32_t weightIndex = 0; weightIndex < bone->mNumWeights; ++weightIndex) {
+				jointWeightData.vertexWeights.push_back({ bone->mWeights[weightIndex].mWeight,bone->mWeights[weightIndex].mVertexId });
 			}
 		}
 		// Assign material to the mesh

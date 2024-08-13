@@ -37,6 +37,7 @@ GameScene::~GameScene() {
 	delete utahTeapot_ ;
 	delete animatedCubeModel_;
 	delete animatedCube_;
+	delete animation_;
 }
 
 void GameScene::Initialize() {

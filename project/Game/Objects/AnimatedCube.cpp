@@ -2,6 +2,7 @@
 #include<assert.h>
 #include"imgui.h"
 #include"Mymath.h"
+#include"DirectXCommon.h"
 
 void AnimatedCube::Initialize(Model* model, std::string textureHandle, ViewProjection* viewProjection, Model::Animation* animation)
 {
@@ -19,6 +20,10 @@ void AnimatedCube::Initialize(Model* model, std::string textureHandle, ViewProje
 	skeleton_ = model_->CreateSkeleton(model_->GetModelData()->rootNode);
 	animation_ = animation;
 	model_->GetMaterial()->GetMaterialData()->enableLighting = true;
+	for (std::string& name : model_->GetModelData()->names) {
+		//skinCluster = model_->CreateSkinCluster(DirectXCommon::GetInstance()->GetDevice(), skeleton_, model_->GetModelData()->object[name]);
+		model_->SetSkinCluster(model_->CreateSkinCluster(DirectXCommon::GetInstance()->GetDevice(), skeleton_, model_->GetModelData()->object[name]));
+	}
 }
 
 void AnimatedCube::Updata()
@@ -33,6 +38,7 @@ void AnimatedCube::Updata()
 	//worldTransform_.localMatrix_ = localMatrix;
 	model_->ApplyAnimation(skeleton_, animation_, animationTime);
 	model_->SkeletonUpdata(skeleton_);
+	model_->SkinClusterUpdata(model_->GetSkinCluster(), skeleton_);
 #ifdef _DEBUG
 	// ImGuiフレーム開始
 	ImGui::Begin("3Dobjects");
