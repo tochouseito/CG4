@@ -76,60 +76,60 @@ void DebugCamera::CameraMove(Vector3& cameraRotate, Vector3& cameraTranslate, Ve
 
 		/// ========カメラ操作========
 		// カメラの回転を更新する
-		if (Input::GetInstance()->IsPressMouse(0) == 1) {
-			if (!isLeftClicked) {
-				// マウスがクリックされたときに現在のマウス位置を保存する
-				clickPosition = Input::GetInstance()->GetMousePosition();
-				isLeftClicked = true;
-			} else {
-				// マウスがクリックされている間はカメラの回転を更新する
-				Vector2 currentMousePos;
-				currentMousePos = Input::GetInstance()->GetMousePosition();
-
-				float deltaX = static_cast<float>(currentMousePos.x - clickPosition.x);
-				float deltaY = static_cast<float>(currentMousePos.y - clickPosition.y);
-
-				cameraRotate.x -= deltaY * mouseSensitivity;
-				cameraRotate.y += deltaX * mouseSensitivity;
-
-				// 現在のマウス位置を保存する
-				clickPosition = currentMousePos;
-			}
+	if (Input::GetInstance()->IsPressMouse(0) == 1) {
+		if (!isLeftClicked) {
+			// マウスがクリックされたときに現在のマウス位置を保存する
+			clickPosition = Input::GetInstance()->GetMousePosition();
+			isLeftClicked = true;
 		} else {
-			// マウスがクリックされていない場合はフラグをリセットする
-			isLeftClicked = false;
+			// マウスがクリックされている間はカメラの回転を更新する
+			Vector2 currentMousePos;
+			currentMousePos = Input::GetInstance()->GetMousePosition();
+
+			float deltaX = static_cast<float>(currentMousePos.x - clickPosition.x);
+			float deltaY = static_cast<float>(currentMousePos.y - clickPosition.y);
+
+			cameraRotate.x -= deltaY * mouseSensitivity;
+			cameraRotate.y += deltaX * mouseSensitivity;
+
+			// 現在のマウス位置を保存する
+			clickPosition = currentMousePos;
 		}
+	} else {
+		// マウスがクリックされていない場合はフラグをリセットする
+		isLeftClicked = false;
+	}
 
-		// カメラの位置を更新する
-		if (Input::GetInstance()->IsPressMouse(2) == 1) {
-			if (!isWheelClicked) {
-				// マウスがクリックされたときに現在のマウス位置を保存する
-				clickPosition = Input::GetInstance()->GetMousePosition();
-				isWheelClicked = true;
-			} else {
-				// マウスがクリックされている間はカメラの位置を更新する
-				Vector2 currentMousePos;
-				currentMousePos = Input::GetInstance()->GetMousePosition();
-
-				float deltaX = static_cast<float>(currentMousePos.x - clickPosition.x);
-				float deltaY = static_cast<float>(currentMousePos.y - clickPosition.y);
-
-				cameraTranslate -= rotatedX * deltaX * mouseSensitivity;
-				cameraTranslate += rotatedY * deltaY * mouseSensitivity;
-
-				// 現在のマウス位置を保存する
-				clickPosition = currentMousePos;
-			}
+	// カメラの位置を更新する
+	if (Input::GetInstance()->IsPressMouse(2) == 1) {
+		if (!isWheelClicked) {
+			// マウスがクリックされたときに現在のマウス位置を保存する
+			clickPosition = Input::GetInstance()->GetMousePosition();
+			isWheelClicked = true;
 		} else {
-			// マウスがクリックされていない場合はフラグをリセットする
-			isWheelClicked = false;
+			// マウスがクリックされている間はカメラの位置を更新する
+			Vector2 currentMousePos;
+			currentMousePos = Input::GetInstance()->GetMousePosition();
+
+			float deltaX = static_cast<float>(currentMousePos.x - clickPosition.x);
+			float deltaY = static_cast<float>(currentMousePos.y - clickPosition.y);
+
+			cameraTranslate -= rotatedX * deltaX * mouseSensitivity;
+			cameraTranslate += rotatedY * deltaY * mouseSensitivity;
+
+			// 現在のマウス位置を保存する
+			clickPosition = currentMousePos;
 		}
+	} else {
+		// マウスがクリックされていない場合はフラグをリセットする
+		isWheelClicked = false;
+	}
 
-		// マウスホイールの移動量を取得する
-		int wheelDelta = -Input::GetInstance()->GetWheel();
+	// マウスホイールの移動量を取得する
+	int wheelDelta = -Input::GetInstance()->GetWheel();
 
-		// マウスホイールの移動量に応じてカメラの移動を更新する
-		cameraTranslate.z += rotatedZ.z * float(wheelDelta) * moveSpeed;
-		/// =====================
-	//}
+	// マウスホイールの移動量に応じてカメラの移動を更新する
+	cameraTranslate.z += rotatedZ.z * float(wheelDelta) * moveSpeed;
+	/// =====================
+//}
 }
