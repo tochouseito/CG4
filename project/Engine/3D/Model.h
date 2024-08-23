@@ -98,6 +98,7 @@ public:
 		std::unordered_map<std::string, ObjectData> object;
 		std::vector<std::string> names;
 		Node rootNode;
+		bool bone = false;
 	};
 	struct VertexInfluence {
 		std::array<float,kNumMaxInfluence>weights;

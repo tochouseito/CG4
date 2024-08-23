@@ -218,18 +218,26 @@ void Model::Draw(WorldTransform& worldTransform,ViewProjection& viewProjection,
 	// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけばいい
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// Roosignatureを設定。PSOに設定しているけど別途設定が必要
-	//commandList->SetGraphicsRootSignature(GraphicsPipelineState::GetRootSignature());
-	//commandList->SetPipelineState(GraphicsPipelineState::GetPipelineState(current_blend));// PSOを設定
-	commandList->SetGraphicsRootSignature(GraphicsPipelineState::GetRootSignatureSkinning());
-	commandList->SetPipelineState(GraphicsPipelineState::GetPipelineStateSkinning(current_blend));// PSOを設定
+	if (modelData_->bone) {/*ボーンあり*/
+		commandList->SetGraphicsRootSignature(GraphicsPipelineState::GetRootSignatureSkinning());
+		commandList->SetPipelineState(GraphicsPipelineState::GetPipelineStateSkinning(current_blend));// PSOを設定
+	} else/*ボーンなし*/
+	{
+		commandList->SetGraphicsRootSignature(GraphicsPipelineState::GetRootSignature());
+		commandList->SetPipelineState(GraphicsPipelineState::GetPipelineState(current_blend));// PSOを設定
+	}
 	if (modelData_) {
 		for (std::string name : modelData_->names) {
-			D3D12_VERTEX_BUFFER_VIEW vbvs[2] = {
-				mesh_->GetVBV(name),
-				skinCluster_->influenceBufferView,
-			};
-			//commandList->IASetVertexBuffers(0, 1, mesh_->GetVertexBufferView(name));// VBVを設定
-			commandList->IASetVertexBuffers(0, 2, vbvs);
+			if (modelData_->bone) {
+				D3D12_VERTEX_BUFFER_VIEW vbvs[2] = {
+					mesh_->GetVBV(name),
+					skinCluster_->influenceBufferView,
+				};
+				commandList->IASetVertexBuffers(0, 2, vbvs);
+			} else
+			{
+				commandList->IASetVertexBuffers(0, 1, mesh_->GetVertexBufferView(name));// VBVを設定
+			}
 			D3D12_INDEX_BUFFER_VIEW* v = mesh_->GetIndexBufferView(name);
 			commandList->IASetIndexBuffer(v);
 			if (useMonsterBall) {
@@ -250,7 +258,9 @@ void Model::Draw(WorldTransform& worldTransform,ViewProjection& viewProjection,
 				commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetTextureHandle(textureHandle));
 			}
 			commandList->SetGraphicsRootDescriptorTable(1, worldTransform.GetSrvHandleGPU());
-			commandList->SetGraphicsRootDescriptorTable(7, skinCluster_->paletteSrvHandle.second);
+			if (modelData_->bone) {
+				commandList->SetGraphicsRootDescriptorTable(7, skinCluster_->paletteSrvHandle.second);
+			}
 			// 描画！(DrawCall/ドローコール)。３頂点で1つのインスタンス。インスタンスについては今後
 			//commandList->DrawInstanced(static_cast<UINT>(mesh_->GetDataVertices(name)), 1, 0, 0);
 			commandList->DrawIndexedInstanced(static_cast<UINT>(GetIndices(name)), 1, 0, 0, 0);
@@ -576,6 +586,13 @@ Model::ModelData*  Model::LoadModelFile(const std::string& directoryPath, const 
 				uint32_t vertexIndex = face.mIndices[element];
 				modelData->object[meshName].indices.push_back(vertexIndex);
 			}
+		}
+		/*ボーン解析*/
+		if (!mesh->mNumBones) {
+			modelData->bone = false;
+		} else
+		{
+			modelData->bone = true;
 		}
 		for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex) {
 			aiBone* bone = mesh->mBones[boneIndex];// AssimpではJointをBoneと呼んでいる
