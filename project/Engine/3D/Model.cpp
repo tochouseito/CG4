@@ -218,8 +218,10 @@ void Model::Draw(WorldTransform& worldTransform,ViewProjection& viewProjection,
 	// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけばいい
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// Roosignatureを設定。PSOに設定しているけど別途設定が必要
-	commandList->SetGraphicsRootSignature(GraphicsPipelineState::GetRootSignature());
-	commandList->SetPipelineState(GraphicsPipelineState::GetPipelineState(current_blend));// PSOを設定
+	//commandList->SetGraphicsRootSignature(GraphicsPipelineState::GetRootSignature());
+	//commandList->SetPipelineState(GraphicsPipelineState::GetPipelineState(current_blend));// PSOを設定
+	commandList->SetGraphicsRootSignature(GraphicsPipelineState::GetRootSignatureSkinning());
+	commandList->SetPipelineState(GraphicsPipelineState::GetPipelineStateSkinning(current_blend));// PSOを設定
 	if (modelData_) {
 		for (std::string name : modelData_->names) {
 			D3D12_VERTEX_BUFFER_VIEW vbvs[2] = {

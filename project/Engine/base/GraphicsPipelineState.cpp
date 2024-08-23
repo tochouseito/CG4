@@ -2030,7 +2030,7 @@ void GraphicsPipelineState::CreateGraphicsPipelineSkinning(ID3D12Device* device)
 
 	// バイナリをもとに生成
 	hr = DirectXCommon::GetInstance()->GetDevice()->CreateRootSignature(0, signatureBlob->GetBufferPointer(),
-		signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature_));
+		signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignatureSkinning_));
 	assert(SUCCEEDED(hr));
 
 	// InputLayout
@@ -2100,7 +2100,7 @@ void GraphicsPipelineState::CreateGraphicsPipelineSkinning(ID3D12Device* device)
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
-	graphicsPipelineStateDesc.pRootSignature = rootSignature_.Get();  // RootSignature
+	graphicsPipelineStateDesc.pRootSignature = rootSignatureSkinning_.Get();  // RootSignature
 	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;   // InputLayout
 	graphicsPipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(),
 	vertexShaderBlob->GetBufferSize() };                       // VertexShader
@@ -2125,7 +2125,7 @@ void GraphicsPipelineState::CreateGraphicsPipelineSkinning(ID3D12Device* device)
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	// 実際に生成
 	hr = DirectXCommon::GetInstance()->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
-		IID_PPV_ARGS(&graphicsPipelineState_[kBlendModeNone]));
+		IID_PPV_ARGS(&graphicsPipelineStateSkinning_[kBlendModeNone]));
 	assert(SUCCEEDED(hr));
 
 	// ここからブレンドPSOの各設定
@@ -2141,7 +2141,7 @@ void GraphicsPipelineState::CreateGraphicsPipelineSkinning(ID3D12Device* device)
 
 	graphicsPipelineStateDesc.BlendState = blendDesc;          // BlendState
 	hr = DirectXCommon::GetInstance()->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
-		IID_PPV_ARGS(&graphicsPipelineState_[kBlendModeNormal]));
+		IID_PPV_ARGS(&graphicsPipelineStateSkinning_[kBlendModeNormal]));
 	assert(SUCCEEDED(hr));
 
 	//!< 加算。Src * SrcA + Dest * 1
@@ -2150,7 +2150,7 @@ void GraphicsPipelineState::CreateGraphicsPipelineSkinning(ID3D12Device* device)
 	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
 	graphicsPipelineStateDesc.BlendState = blendDesc;          // BlendState
 	hr = DirectXCommon::GetInstance()->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
-		IID_PPV_ARGS(&graphicsPipelineState_[kBlendModeAdd]));
+		IID_PPV_ARGS(&graphicsPipelineStateSkinning_[kBlendModeAdd]));
 	assert(SUCCEEDED(hr));
 
 	//!< 減算。Dest * 1 - Src * SrcA
@@ -2159,7 +2159,7 @@ void GraphicsPipelineState::CreateGraphicsPipelineSkinning(ID3D12Device* device)
 	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
 	graphicsPipelineStateDesc.BlendState = blendDesc;          // BlendState
 	hr = DirectXCommon::GetInstance()->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
-		IID_PPV_ARGS(&graphicsPipelineState_[kBlendModeSubtract]));
+		IID_PPV_ARGS(&graphicsPipelineStateSkinning_[kBlendModeSubtract]));
 	assert(SUCCEEDED(hr));
 
 	//!< 乗算。Src * 0 + Dest * Src
@@ -2168,7 +2168,7 @@ void GraphicsPipelineState::CreateGraphicsPipelineSkinning(ID3D12Device* device)
 	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_SRC_COLOR;
 	graphicsPipelineStateDesc.BlendState = blendDesc;          // BlendState
 	hr = DirectXCommon::GetInstance()->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
-		IID_PPV_ARGS(&graphicsPipelineState_[kBlendModeMultily]));
+		IID_PPV_ARGS(&graphicsPipelineStateSkinning_[kBlendModeMultily]));
 	assert(SUCCEEDED(hr));
 
 	//!< スクリーン。Src * (1 - Dest) *Dest * 1
@@ -2177,7 +2177,7 @@ void GraphicsPipelineState::CreateGraphicsPipelineSkinning(ID3D12Device* device)
 	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
 	graphicsPipelineStateDesc.BlendState = blendDesc;          // BlendState
 	hr = DirectXCommon::GetInstance()->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
-		IID_PPV_ARGS(&graphicsPipelineState_[kBlendModeScreen]));
+		IID_PPV_ARGS(&graphicsPipelineStateSkinning_[kBlendModeScreen]));
 	assert(SUCCEEDED(hr));
 }
 
