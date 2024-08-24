@@ -2224,10 +2224,12 @@ void GraphicsPipelineState::CreateGraphicsPipelineSkybox(ID3D12Device* device)
 	rootParameter[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;// VertexShaderを使う
 	rootParameter[2].Descriptor.ShaderRegister = 0;// レジスタ番号2とバインド
 
-	// ワールド
-	rootParameter[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+
+	// World
+	rootParameter[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 	rootParameter[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;// VertexShaderを使う
-	rootParameter[3].Descriptor.ShaderRegister = 1;// レジスタ番号2とバインド
+	rootParameter[3].DescriptorTable.pDescriptorRanges = &srvDescriptorRangeVS1;// Tableの中身の配列を指定
+	rootParameter[3].DescriptorTable.NumDescriptorRanges = 1;// Tableで利用する数
 
 	descriptionRooTSignature.pParameters = rootParameter;// ルートパラメータ配列へのポインタ
 	descriptionRooTSignature.NumParameters = _countof(rootParameter);// 配列の長さ
@@ -2261,7 +2263,7 @@ void GraphicsPipelineState::CreateGraphicsPipelineSkybox(ID3D12Device* device)
 
 	// InputLayout
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[2] = {};
-	inputElementDescs[0].SemanticName = "POSITIONT";
+	inputElementDescs[0].SemanticName = "POSITION";
 	inputElementDescs[0].SemanticIndex = 0;
 	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;

@@ -57,6 +57,8 @@ public: // メンバ関数
 
 	D3D12_INDEX_BUFFER_VIEW* GetIndexBufferView() { return &indexBufferViewSphere_; }
 
+	D3D12_INDEX_BUFFER_VIEW* GetIndexBufferViewDaf() { return &indexBufferView_; }
+
 	uint32_t GetBallVertex() { return ballVertex_; }
 
 	void CreateIndexResource();

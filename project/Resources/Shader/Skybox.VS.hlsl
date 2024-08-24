@@ -1,27 +1,28 @@
 #include"Skybox.hlsli"
 struct WVP
 {
-	float4x4 View;
-	float4x4 Projection;
-	float3 cameraPosition;
+	float32_t4x4 View;
+	float32_t4x4 Projection;
+	float32_t3 cameraPosition;
 };
 struct World
 {
-	float4x4 World;
-	float4x4 WorldInverse;
-	float4x4 rootMatrix;
+	float32_t4x4 World;
+	float32_t4x4 WorldInverse;
+	float32_t4x4 rootMatrix;
 };
 ConstantBuffer<WVP> gWVP : register(b0);
-ConstantBuffer<World> gWorld : register(b1);
+StructuredBuffer<World> gWorld : register(t0);
 struct VertexShaderInput
 {
-	float4 position : POSITIONT;
-	float2 texcoord : TEXCOORD0;
+	float32_t4 position : POSITION;
+	float32_t2 texcoord : TEXCOORD0;
 };
 VertexShaderOutput main(VertexShaderInput input){
 	VertexShaderOutput output;
-	float4x4 WVP = mul(gWVP.View, gWVP.Projection);
-	WVP = mul(gWorld.World, WVP);
+	float32_t4x4 WVP = mul(gWVP.View, gWVP.Projection);
+	WVP = mul(gWorld[0].World, WVP);
 	output.position = mul(input.position, WVP).xyww;
 	output.texcoord = input.position.xyz;
+	return output;
 }

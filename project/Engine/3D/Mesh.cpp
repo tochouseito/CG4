@@ -293,28 +293,28 @@ void Mesh::CreateSkyBoxVertexResource()
 	indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexData_));
 
 	// 右面インデックス
-	indexData_[0] = 0; indexData_[1] = 2; indexData_[2] = 1;
-	indexData_[3] = 2; indexData_[4] = 3; indexData_[5] = 1;
+	indexData_[0] = 0; indexData_[1] = 1; indexData_[2] = 2;
+	indexData_[3] = 2; indexData_[4] = 1; indexData_[5] = 3;
 
 	// 左面インデックス
-	indexData_[6] = 4; indexData_[7] = 6; indexData_[8] = 5;
-	indexData_[9] = 6; indexData_[10] = 7; indexData_[11] = 5;
+	indexData_[6] = 4; indexData_[7] = 5; indexData_[8] = 6;
+	indexData_[9] = 6; indexData_[10] = 5; indexData_[11] = 7;
 
 	// 前面インデックス
-	indexData_[12] = 8; indexData_[13] = 10; indexData_[14] = 9;
-	indexData_[15] = 10; indexData_[16] = 11; indexData_[17] = 9;
+	indexData_[12] = 8; indexData_[13] = 9; indexData_[14] = 10;
+	indexData_[15] = 10; indexData_[16] = 9; indexData_[17] = 11;
 
 	// 後面インデックス
-	indexData_[18] = 12; indexData_[19] = 14; indexData_[20] = 13;
-	indexData_[21] = 14; indexData_[22] = 15; indexData_[23] = 13;
+	indexData_[18] = 12; indexData_[19] = 13; indexData_[20] = 14;
+	indexData_[21] = 14; indexData_[22] = 13; indexData_[23] = 15;
 
 	// 上面インデックス
-	indexData_[24] = 16; indexData_[25] = 18; indexData_[26] = 17;
-	indexData_[27] = 18; indexData_[28] = 19; indexData_[29] = 17;
+	indexData_[24] = 16; indexData_[25] = 17; indexData_[26] = 18;
+	indexData_[27] = 18; indexData_[28] = 17; indexData_[29] = 19;
 
 	// 下面インデックス
-	indexData_[30] = 20; indexData_[31] = 22; indexData_[32] = 21;
-	indexData_[33] = 22; indexData_[34] = 23; indexData_[35] = 21;
+	indexData_[30] = 20; indexData_[31] = 21; indexData_[32] = 22;
+	indexData_[33] = 22; indexData_[34] = 21; indexData_[35] = 23;
 }
 
 void Mesh::CreateSpriteVertexResource(size_t vertices) {

@@ -12,6 +12,7 @@ void Skybox::Initialize(Model* model, std::string textureHandle, ViewProjection*
 	viewProjection_ = viewProjection;
 	/*ワールドトランスフォームの初期化*/
 	worldTransform_.Initialize();
+	worldTransform_.scale_ = { 10.0f,10.0f ,10.0f };
 }
 
 void Skybox::Update()
@@ -23,5 +24,5 @@ void Skybox::Update()
 void Skybox::Draw()
 {
 	/*3Dモデルを描画*/
-	model_->Draw(worldTransform_, *viewProjection_, textureHandle_);
+	model_->DrawSkybox(worldTransform_, *viewProjection_, textureHandle_);
 }

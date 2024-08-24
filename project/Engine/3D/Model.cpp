@@ -307,10 +307,14 @@ void Model::DrawSkybox(WorldTransform& worldTransform, ViewProjection& viewProje
 	commandList->SetGraphicsRootSignature(GraphicsPipelineState::GetRootSignatureSkybox());
 	commandList->SetPipelineState(GraphicsPipelineState::GetPipelineStateSkybox(current_blend));// PSOを設定
 	commandList->IASetVertexBuffers(0, 1, mesh_->GetVertexBufferView());// VBVを設定
-	commandList->IASetIndexBuffer(mesh_->GetIndexBufferView());// IBVを設定
+	commandList->IASetIndexBuffer(mesh_->GetIndexBufferViewDaf());// IBVを設定
 	// wvp用のCBufferの場所を設定
-	commandList->SetGraphicsRootConstantBufferView(1, viewProjection.GetWvpResource()->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootConstantBufferView(1, viewProjection.GetWvpResource()->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(2, viewProjection.GetWvpResource()->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootDescriptorTable(3, worldTransform.GetSrvHandleGPU());
+	commandList->SetGraphicsRootDescriptorTable(1, TextureManager::GetInstance()->GetTextureHandle(textureHandle));
+	// マテリアルCBufferの場所を設定
+	commandList->SetGraphicsRootConstantBufferView(0, material_->GetMaterialResource()->GetGPUVirtualAddress());
+	commandList->DrawIndexedInstanced(static_cast<UINT>(36), 1, 0, 0, 0);
 }
 Model* Model::LordModel(const std::string& filename) {
 	Model* model = new Model();

@@ -1,16 +1,16 @@
 #include"Skybox.hlsli"
 cbuffer Material : register(b0)
 {
-	float4 colorMaterial : SV_TARGET0;
+	float32_t4 colorMaterial : SV_TARGET0;
 	int enableLighting;
-	float4x4 uvTransform;
-	float shininess;
+	float32_t4x4 uvTransform;
+	float32_t shininess;
 };
 struct PixelShaderOutput
 {
-	float4 colorPS : SV_TARGET0;
+	float32_t4 colorPS : SV_TARGET0;
 };
-Texture2D<float4> gTexture : register(t0);
+TextureCube<float32_t4> gTexture : register(t0);
 SamplerState gSampler : register(s0);
 PixelShaderOutput main(VertexShaderOutput input)
 {
