@@ -156,6 +156,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\Objects\multiMeshModel.cpp" />
     <ClCompile Include="Game\Objects\suzanne.cpp" />
     <ClCompile Include="Game\Objects\UtahTeapotModel.cpp" />
+    <ClCompile Include="Game\Objects\Skybox.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Objects\AnimatedCube.h" />
@@ -216,6 +217,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\Objects\multiMeshModel.h" />
     <ClInclude Include="Game\Objects\suzanne.h" />
     <ClInclude Include="Game\Objects\UtahTeapotModel.h" />
+    <ClInclude Include="Game\Objects\Skybox.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shader\BasicGeometryShader.hlsl">
@@ -361,6 +363,15 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <None Include="Resources\Shader\obj3d.hlsli" />
     <None Include="Resources\Shader\Particle.hlsli" />
     <None Include="Resources\Shader\Primitive.hlsli" />
+    <None Include="Resources\Shader\Skybox.hlsli" />
+    <None Include="Resources\Shader\Skybox.PS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="Resources\Shader\Skybox.VS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
     <None Include="Resources\Shader\Sprite.hlsli" />
   </ItemGroup>
   <ItemGroup>

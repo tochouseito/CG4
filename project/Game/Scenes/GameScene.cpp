@@ -38,6 +38,8 @@ GameScene::~GameScene() {
 	delete animatedCubeModel_;
 	delete animatedCube_;
 	delete animation_;
+	delete skyboxModel_;
+	delete skybox_;
 }
 
 void GameScene::Initialize() {
@@ -52,6 +54,7 @@ void GameScene::Initialize() {
 	textureHandle_[2] = TextureManager::Load("./Resources/monsterBall.png");
 	textureHandle_[3] = TextureManager::Load("./Resources/noise.png");
 	textureHandle_[4] = TextureManager::Load("./Resources/checkerBoard.png");
+	textureHandle_[5] = TextureManager::Load("./Resources/earthcubemap.dds");
 	
 	// ビュープロジェクションの初期化
 	viewProjection_.Initialize();
@@ -131,6 +134,10 @@ void GameScene::Initialize() {
 	animation_ = Model::LordAnimationFile("./Resources", "Walk.gltf");
 	animatedCube_ = new AnimatedCube();
 	animatedCube_->Initialize(animatedCubeModel_, textureHandle_[0], &viewProjection_, animation_);
+
+	skyboxModel_ = Model::CreateSkyBox();
+	skybox_ = new Skybox();
+	skybox_->Initialize(skyboxModel_, textureHandle_[5], &viewProjection_);
 }
 
 void GameScene::Finalize()
@@ -197,6 +204,7 @@ void GameScene::Update() {
 	/*suzanne_->Updata();
 	utahTeapot_->Updata();*/
 	animatedCube_->Updata();
+	skybox_->Update();
 	ImGui::Begin("HSV");
 	ImGui::DragFloat("hue", &DirectXCommon::GetInstance()->GetHSVData()->hue, 0.01f);
 	ImGui::DragFloat("saturation", &DirectXCommon::GetInstance()->GetHSVData()->saturation, 0.01f);
@@ -239,4 +247,5 @@ void GameScene::Draw() {
 	//suzanne_->Draw();
 	//utahTeapot_->Draw();
 	animatedCube_->Draw();
+	skybox_->Draw();
 }

@@ -41,7 +41,7 @@ D3D12_GPU_DESCRIPTOR_HANDLE SrvManager::GetGPUDescriptorHandle(uint32_t index) {
 	return handleGPU;
 }
 // SRV作成
-void SrvManager::CreateSRVforTexture2D(uint32_t srvIndex, ID3D12Resource* pResource, DXGI_FORMAT Format, UINT MipLevels, bool IsCubemap = false) {
+void SrvManager::CreateSRVforTexture2D(uint32_t srvIndex, ID3D12Resource* pResource, DXGI_FORMAT Format, UINT MipLevels, bool IsCubemap) {
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
 
 	// metadataを基にSRVの設定

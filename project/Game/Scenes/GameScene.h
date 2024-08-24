@@ -28,6 +28,7 @@
 #include"multiMeshModel.h"
 #include"suzanne.h"
 #include"UtahTeapotModel.h"
+#include"Skybox.h"
 
 /*Scene*/
 #include"BaseScene.h"
@@ -86,7 +87,7 @@ private: // メンバ変数
 	SceneManager* sceneManager_ = nullptr;
 	
 	// テクスチャハンドル
-	std::string textureHandle_[5]{};
+	std::string textureHandle_[6]{};
 
 	
 	Particle* particles_ = nullptr;
@@ -132,6 +133,9 @@ private: // メンバ変数
 	Model* animatedCubeModel_ = nullptr;
 	AnimatedCube* animatedCube_ = nullptr;
 	Model::Animation* animation_ = nullptr;
+
+	Model* skyboxModel_ = nullptr;
+	Skybox* skybox_ = nullptr;
 
 	/// <summary>
 	/// ゲームシーン用

@@ -129,6 +129,9 @@ public:
 	void Draw(WorldTransform& worldTransform,ViewProjection& viewProjection,
 		std::string textureHandle );
 
+	void DrawSkybox(WorldTransform& worldTransform, ViewProjection& viewProjection,
+		std::string textureHandle);
+
 	/// <summary>
 	/// 描画
 	/// </summary>
@@ -161,6 +164,9 @@ public:
 
 	/*球オブジェクト*/
 	static Model* CreateSphere(uint32_t Subdivision = 16);
+
+	/*Skybox用*/
+	static Model* CreateSkyBox();
 
 	Vector3 CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time);
 

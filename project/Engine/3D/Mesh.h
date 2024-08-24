@@ -89,6 +89,8 @@ public: // メンバ関数
 
 	void CreateModelIndexResource(size_t indices, const std::string& name);
 
+	void CreateSkyBoxVertexResource();
+
 	/// <summary>
 	/// 頂点リソースを作る
 	/// </summary>
@@ -113,5 +115,6 @@ private: // メンバ変数
 	uint32_t* indexData_ = nullptr;
 	Microsoft::WRL::ComPtr < ID3D12Resource> indexResource_;
 	D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
+	uint32_t boxVertex_ = 24;
 };
 

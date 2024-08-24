@@ -50,6 +50,15 @@ Model* Model::CreateSphere(uint32_t Subdivision) {
 	return model;
 }
 
+Model* Model::CreateSkyBox()
+{
+	Model* model = new Model();
+	GraphicsPipelineState::GetInstance()->CreateGraphicsPipelineSkybox(DirectXCommon::GetInstance()->GetDevice());
+	model->mesh_->CreateSkyBoxVertexResource();
+	model->material_->CreateMaterialResource();
+	return model;
+}
+
 Vector3 Model::CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time)
 {
 	assert(!keyframes.empty());// キーがないものは返す値がわからないのでだめ
@@ -285,7 +294,23 @@ void Model::Draw(WorldTransform& worldTransform,ViewProjection& viewProjection,
 		commandList->SetGraphicsRootDescriptorTable(1, worldTransform.GetSrvHandleGPU());
 		// 描画！(DrawCall/ドローコール)。３頂点で1つのインスタンス。インスタンスについては今後
 		commandList->DrawInstanced(static_cast<UINT>(mesh_->GetVertices()), 1, 0, 0);
+		// マテリアルCBufferの場所を設定
+		commandList->SetGraphicsRootConstantBufferView(0, material_->GetMaterialResource()->GetGPUVirtualAddress());
 	}
+}
+void Model::DrawSkybox(WorldTransform& worldTransform, ViewProjection& viewProjection, std::string textureHandle)
+{
+	// コマンドリストの取得
+	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
+	// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけばいい
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	commandList->SetGraphicsRootSignature(GraphicsPipelineState::GetRootSignatureSkybox());
+	commandList->SetPipelineState(GraphicsPipelineState::GetPipelineStateSkybox(current_blend));// PSOを設定
+	commandList->IASetVertexBuffers(0, 1, mesh_->GetVertexBufferView());// VBVを設定
+	commandList->IASetIndexBuffer(mesh_->GetIndexBufferView());// IBVを設定
+	// wvp用のCBufferの場所を設定
+	commandList->SetGraphicsRootConstantBufferView(1, viewProjection.GetWvpResource()->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(1, viewProjection.GetWvpResource()->GetGPUVirtualAddress());
 }
 Model* Model::LordModel(const std::string& filename) {
 	Model* model = new Model();

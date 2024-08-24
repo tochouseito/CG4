@@ -237,6 +237,9 @@
     <ClCompile Include="Game\Objects\AnimatedCube.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Objects\Skybox.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -413,6 +416,9 @@
     <ClInclude Include="Game\Objects\AnimatedCube.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Game\Objects\Skybox.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shader\Sprite.VS.hlsl">
@@ -473,5 +479,8 @@
       <Filter>リソース ファイル\Shader</Filter>
     </None>
     <None Include="Resources\Shader\FullScreen.hlsli" />
+    <None Include="Resources\Shader\Skybox.hlsli" />
+    <None Include="Resources\Shader\Skybox.VS.hlsl" />
+    <None Include="Resources\Shader\Skybox.PS.hlsl" />
   </ItemGroup>
 </Project>
