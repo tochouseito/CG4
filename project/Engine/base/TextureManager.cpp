@@ -123,14 +123,23 @@ const std::string TextureManager::LoadInternal(const std::string& filePath) {
 	// Textureを読んで転送する
 	//DirectX::ScratchImage mipImages = LordTexture(filePath);
 	// テクスチャファイルを読んでプログラムで扱えるようにする	
+	HRESULT hr;
 	DirectX::ScratchImage image{};
 	std::wstring filePathW = ConvertString(filePath);
-	HRESULT hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
+	if (filePathW.ends_with(L".dds")) {/*.ddsで終わっていたらddsとみなす。より安全な方法はいくらでもあるがいまのとここれ*/
+		hr = DirectX::LoadFromDDSFile(filePathW.c_str(), DirectX::DDS_FLAGS_NONE, nullptr, image);
+	} else{
+		hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
+	}
 	assert(SUCCEEDED(hr));
 
 	// ミップマップの生成	
 	DirectX::ScratchImage mipImages{};
-	hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImages);
+	if (DirectX::IsCompressed(image.GetMetadata().format)) {/*圧縮フォーマットかどうか調べる*/
+		mipImages = std::move(image);/*圧縮フォーマットならそのまま使うのでmoveする*/
+	} else {
+		hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImages);
+	}
 	assert(SUCCEEDED(hr));
 
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
@@ -150,11 +159,10 @@ const std::string TextureManager::LoadInternal(const std::string& filePath) {
 	textureData.cpuDescHandleSRV = srvManager_->GetCPUDescriptorHandle(textureData.srvIndex);
 	textureData.gpuDescHandleSRV = srvManager_->GetGPUDescriptorHandle(textureData.srvIndex);
 	textureData.metadata = metadata;
-
 	// テクスチャ枚数上限チェック
 	assert(srvManager_->TextureMaxCheck());
 
-	srvManager_->CreateSRVforTexture2D(textureData.srvIndex, textureData.resource.Get(), metadata.format, UINT(metadata.mipLevels));
+	srvManager_->CreateSRVforTexture2D(textureData.srvIndex, textureData.resource.Get(), metadata.format, UINT(metadata.mipLevels),metadata.IsCubemap());
 
 	return filePath;
 }
