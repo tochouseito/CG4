@@ -139,6 +139,8 @@ public:
 
 	void SetTextureHandle(D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU, uint32_t handleNum) { textureSrvHandleGPU_[handleNum] = textureSrvHandleGPU; }
 
+	void SetEnviromentTex(std::string& Handle) { environmentTexture_ = Handle; }
+
 	OBJModelData LoadObjFile(const std::string& directoryPath, const std::string& filename);
 
 	static ModelData* LoadModelFile(const std::string& directory, const std::string& filename);
@@ -233,7 +235,7 @@ private:
 	// 現在選択されているアイテムのインデックス
 	uint32_t current_blend = 0;
 	//UINT vertices = 0;
-
+	std::string environmentTexture_;
 	
 };
 

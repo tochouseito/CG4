@@ -133,7 +133,9 @@ void GameScene::Initialize() {
 	animatedCubeModel_ = Model::LordModel("Walk.gltf");
 	animation_ = Model::LordAnimationFile("./Resources", "Walk.gltf");
 	animatedCube_ = new AnimatedCube();
+	animatedCube_->SetEnviromentTexture(textureHandle_[5]);
 	animatedCube_->Initialize(animatedCubeModel_, textureHandle_[0], &viewProjection_, animation_);
+
 
 	skyboxModel_ = Model::CreateSkyBox();
 	skybox_ = new Skybox();
@@ -233,7 +235,7 @@ void GameScene::Update() {
 
 void GameScene::Draw() {
 	//plane_->Draw();
-	axis_->Draw();
+	//axis_->Draw();
 	//sphere_->Draw();
 	//primitive_->Draw();
 	//particles_->Draw();

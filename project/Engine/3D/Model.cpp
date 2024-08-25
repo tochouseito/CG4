@@ -269,6 +269,10 @@ void Model::Draw(WorldTransform& worldTransform,ViewProjection& viewProjection,
 			commandList->SetGraphicsRootDescriptorTable(1, worldTransform.GetSrvHandleGPU());
 			if (modelData_->bone) {
 				commandList->SetGraphicsRootDescriptorTable(7, skinCluster_->paletteSrvHandle.second);
+				commandList->SetGraphicsRootDescriptorTable(8, TextureManager::GetInstance()->GetTextureHandle(environmentTexture_));
+			} else
+			{
+				commandList->SetGraphicsRootDescriptorTable(7, TextureManager::GetInstance()->GetTextureHandle(textureHandle));
 			}
 			// 描画！(DrawCall/ドローコール)。３頂点で1つのインスタンス。インスタンスについては今後
 			//commandList->DrawInstanced(static_cast<UINT>(mesh_->GetDataVertices(name)), 1, 0, 0);

@@ -18,6 +18,8 @@ public:
 	/// </summary>
 	void Draw();
 
+	void SetEnviromentTexture(std::string& Handle) { environmentTexture_ = Handle; }
+
 private:
 	WorldTransform worldTransform_;
 	Model::Animation* animation_=nullptr;
@@ -27,5 +29,6 @@ private:
 	Model* model_ = nullptr;
 	std::string textureHandle_;
 	float animationTime = 0.0f;
+	std::string environmentTexture_;
 };
 

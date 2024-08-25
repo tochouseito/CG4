@@ -24,6 +24,7 @@ void AnimatedCube::Initialize(Model* model, std::string textureHandle, ViewProje
 		//skinCluster = model_->CreateSkinCluster(DirectXCommon::GetInstance()->GetDevice(), skeleton_, model_->GetModelData()->object[name]);
 		model_->SetSkinCluster(model_->CreateSkinCluster(DirectXCommon::GetInstance()->GetDevice(), skeleton_, model_->GetModelData()->object[name]));
 	}
+	model_->SetEnviromentTex(environmentTexture_);
 }
 
 void AnimatedCube::Updata()
