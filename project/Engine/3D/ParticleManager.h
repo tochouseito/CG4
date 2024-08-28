@@ -54,9 +54,18 @@ public:/*パーティクルの要素構造体*/
 		float currentTime;
 		Color color;
 	};
+	struct EmitterSphere {
+		Vector3 translate;// 位置
+		float radius;// 射出半径
+		uint32_t count;// 射出数
+		float frequency;// 射出間隔
+		float frequencyTime;// 射出間隔調整用時間
+		uint32_t emit;// 射出許可
+	};
 	struct GPUParticleGroup {
-		std::list<Particle> particles;
-		Emitter emitter;
+		std::list<GPUParticle> particles;
+		//Emitter emitter;
+		EmitterSphere* emitterSphere=nullptr;
 		AccelerationField accelerationField;
 		std::string textureHandle;
 		std::unique_ptr<Mesh> mesh;
@@ -65,6 +74,7 @@ public:/*パーティクルの要素構造体*/
 		std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE>particleUavHandle;
 		uint32_t srvIndex;
 		uint32_t uavIndex;
+		Microsoft::WRL::ComPtr<ID3D12Resource> emitResource;
 	};
 public:
 	/// <summary>
@@ -94,6 +104,8 @@ public:
 	void DrawGPU();
 
 	void CreateGPUParticleResource();
+
+	void CreateGPUEmitResource();
 
 	/// <summary>
 	/// パーティクル追加

@@ -373,6 +373,71 @@ void GraphicsPipelineState::CreateGraphicsPipelineGPUParticle(ID3D12Device* devi
 		IID_PPV_ARGS(&graphicsPipelineStateGPUParticle_[kBlendModeScreen]));
 	assert(SUCCEEDED(hr));
 }
+void GraphicsPipelineState::CreateComputePipelineEmit(ID3D12Device* device)
+{
+	InitializeDxcCompiler();
+	HRESULT hr;
+
+	// RootSignature作成
+	D3D12_ROOT_SIGNATURE_DESC descriptionRooTSignature{};
+	descriptionRooTSignature.Flags =
+		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+	// RootParameter作成。PixelShaderのMaterialとVertexShaderのTransform
+	D3D12_ROOT_PARAMETER rootParameter[2] = {};
+
+
+
+	D3D12_DESCRIPTOR_RANGE descriptorUAVRange = {};
+	descriptorUAVRange.BaseShaderRegister = 0;
+	descriptorUAVRange.NumDescriptors = 1;
+	descriptorUAVRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+	descriptorUAVRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	rootParameter[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameter[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	rootParameter[0].DescriptorTable.pDescriptorRanges = &descriptorUAVRange;// Tableの中身の配列を指定
+	rootParameter[0].DescriptorTable.NumDescriptorRanges = 1;// Tableで利用する数
+
+	rootParameter[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;// CBVを使う
+	rootParameter[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;// PixelShaderを使う
+	rootParameter[1].Descriptor.ShaderRegister = 0;// レジスタ番号０とバインド
+
+
+	descriptionRooTSignature.pParameters = rootParameter;// ルートパラメータ配列へのポインタ
+	descriptionRooTSignature.NumParameters = _countof(rootParameter);// 配列の長さ
+
+
+	// シリアライズしてバイナリにする
+	Microsoft::WRL::ComPtr < ID3DBlob> signatureBlob = nullptr;
+	Microsoft::WRL::ComPtr < ID3DBlob> errorBlob = nullptr;
+	hr = D3D12SerializeRootSignature(&descriptionRooTSignature,
+		D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
+	if (FAILED(hr)) {
+		Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+		assert(SUCCEEDED(hr));
+	}
+
+	// バイナリをもとに生成
+	hr = DirectXCommon::GetInstance()->GetDevice()->CreateRootSignature(0, signatureBlob->GetBufferPointer(),
+		signatureBlob->GetBufferSize(), IID_PPV_ARGS(&computeRootSignatureEmit_));
+	assert(SUCCEEDED(hr));
+
+	// Shaderをコンパイルする
+	Microsoft::WRL::ComPtr < IDxcBlob> computeShaderBlob = CompilerShader(L"Resources/Shader/EmitParticle.CS.hlsl",
+		L"cs_6_0", dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_);
+	assert(computeShaderBlob != nullptr);
+
+	D3D12_COMPUTE_PIPELINE_STATE_DESC computePipelineStateDesc{};
+	computePipelineStateDesc.CS = {
+	.pShaderBytecode = computeShaderBlob->GetBufferPointer(),
+	.BytecodeLength = computeShaderBlob->GetBufferSize() };                       // VertexShader
+	computePipelineStateDesc.pRootSignature = computeRootSignatureEmit_.Get();
+	// 実際に生成
+	hr = DirectXCommon::GetInstance()->GetDevice()->CreateComputePipelineState(&computePipelineStateDesc,
+		IID_PPV_ARGS(&computePipelineStateEmit_));
+	assert(SUCCEEDED(hr));
+}
 /// <summary>
 /// dxcCompilerを初期化
 /// </summary>

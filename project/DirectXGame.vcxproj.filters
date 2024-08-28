@@ -465,6 +465,7 @@
     <FxCompile Include="Resources\Shader\Particle.CS.hlsl" />
     <FxCompile Include="Resources\Shader\GPUParticle.VS.hlsl" />
     <FxCompile Include="Resources\Shader\GPUParticle.PS.hlsl" />
+    <FxCompile Include="Resources\Shader\EmitParticle.CS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

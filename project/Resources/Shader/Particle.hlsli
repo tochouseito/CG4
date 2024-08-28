@@ -22,3 +22,12 @@ struct PerView
     //float32_t4x4 billboardMatrix;
     float32_t3 cameraPosition;
 };
+struct EmitterSphere
+{
+    float32_t3 translate; 
+    float32_t radius;
+    uint32_t count; 
+    float32_t frequency;
+    float32_t frequencyTime; 
+    uint32_t emit;
+};
