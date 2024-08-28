@@ -492,6 +492,32 @@ Microsoft::WRL::ComPtr < ID3D12Resource> DirectXCommon::CreateBufferResource(ID3
 	assert(SUCCEEDED(hr));
 	return vertexResource;
 }
+Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateUAVResource(ID3D12Device* device, const size_t& sizeInBytes)
+{
+	// リソース用のヒープの設定
+	D3D12_HEAP_PROPERTIES uploadHeapProperties{};
+	uploadHeapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
+	// リソースの設定
+	D3D12_RESOURCE_DESC resourceDesc{};
+	// バッファリソース。テクスチャの場合はまた別の設定をする
+	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+	resourceDesc.Width = sizeInBytes;// リソースのサイズ。今回はVector4を３頂点分
+	// バッファの場合はこれらは1にする決まり
+	resourceDesc.Height = 1;
+	resourceDesc.DepthOrArraySize = 1;
+	resourceDesc.MipLevels = 1;
+	resourceDesc.SampleDesc.Count = 1;
+	resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+	// バッファの場合ははこれにする決まり
+	resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+	// 実際にリソースを作る
+	Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
+	HRESULT hr = device->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE,
+		&resourceDesc, D3D12_RESOURCE_STATE_COMMON, nullptr,
+		IID_PPV_ARGS(&resource));
+	assert(SUCCEEDED(hr));
+	return resource;
+}
 void DirectXCommon::FenceClose() {
 	CloseHandle(fenceEvent_);
 }
@@ -710,6 +736,7 @@ void DirectXCommon::CreateDepthTexture()
 	GraphicsPipelineState::GetInstance()->CreateGraphicsPipelineDissolve(device_.Get());
 	GraphicsPipelineState::GetInstance()->CreateGraphicsPipelineRandom(device_.Get());
 	GraphicsPipelineState::GetInstance()->CreateGraphicsPipelineHSV(device_.Get());
+	GraphicsPipelineState::GetInstance()->CreateComputePipeline(device_.Get());
 }
 
 void DirectXCommon::BarrierTransition( ID3D12Resource* pResource,

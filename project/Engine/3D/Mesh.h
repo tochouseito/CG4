@@ -33,6 +33,12 @@ public:
 		VertexData* vertexData;
 		Microsoft::WRL::ComPtr < ID3D12Resource> vertexResource;
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+		std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE>inputVertexSrvHandle;
+		uint32_t srvIndex = 0;
+		VertexData* outputData;
+		Microsoft::WRL::ComPtr < ID3D12Resource> outputResource;
+		std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE>outputVertexSrvHandle;
+		uint32_t outputsrvIndex = 0;
 		UINT vertices = 0;
 		uint32_t* indexData = nullptr;
 		Microsoft::WRL::ComPtr < ID3D12Resource> indexResource;

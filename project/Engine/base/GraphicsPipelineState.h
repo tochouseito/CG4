@@ -42,6 +42,7 @@ public:
 	static ID3D12PipelineState* GetPipelineStateHSV(uint32_t BlendMode) { return GetInstance()->graphicsPipelineStateHSV_[BlendMode].Get(); }
 	static ID3D12PipelineState* GetPipelineStateSkinning(uint32_t BlendMode) { return GetInstance()->graphicsPipelineStateSkinning_[BlendMode].Get(); }
 	static ID3D12PipelineState* GetPipelineStateSkybox(uint32_t BlendMode) { return GetInstance()->graphicsPipelineStateSkybox_[BlendMode].Get(); }
+	static ID3D12PipelineState* GetPipelineStateCS() { return GetInstance()->computePipelineState_.Get(); }
 
 	static ID3D12RootSignature* GetRootSignature() { return GetInstance()->rootSignature_.Get(); }
 	static ID3D12RootSignature* GetRootSignatureParticle() { return GetInstance()->rootSignatureParticle_.Get(); }
@@ -54,6 +55,7 @@ public:
 	static ID3D12RootSignature* GetRootSignatureHSV() { return GetInstance()->rootSignatureHSV_.Get(); }
 	static ID3D12RootSignature* GetRootSignatureSkinning() { return GetInstance()->rootSignatureSkinning_.Get(); }
 	static ID3D12RootSignature* GetRootSignatureSkybox() { return GetInstance()->rootSignatureSkybox_.Get(); }
+	static ID3D12RootSignature* GetRootSignatureCS() { return GetInstance()->computeRootSignature_.Get(); }
 
 	/// <summary>
 	/// グラフィックスパイプラインの作成
@@ -112,6 +114,12 @@ public:
 	void CreateGraphicsPipelineSkybox(ID3D12Device* device);
 
 	/// <summary>
+	/// ComputeShaderの作成
+	/// </summary>
+	/// <param name="device"></param>
+	void CreateComputePipeline(ID3D12Device* device);
+
+	/// <summary>
 	/// dxcCompilerを初期化
 	/// </summary>
 	void InitializeDxcCompiler();
@@ -146,6 +154,7 @@ private:
 	Microsoft::WRL::ComPtr < ID3D12PipelineState> graphicsPipelineStateHSV_[kCountOfBlendMode];
 	Microsoft::WRL::ComPtr < ID3D12PipelineState> graphicsPipelineStateSkinning_[kCountOfBlendMode];
 	Microsoft::WRL::ComPtr < ID3D12PipelineState> graphicsPipelineStateSkybox_[kCountOfBlendMode];
+	Microsoft::WRL::ComPtr < ID3D12PipelineState> computePipelineState_;
 	//ID3D12PipelineState* graphicsPipelineState_;
 	Microsoft::WRL::ComPtr < IDxcUtils> dxcUtils_;
 	Microsoft::WRL::ComPtr < IDxcCompiler3> dxcCompiler_;
@@ -161,5 +170,6 @@ private:
 	Microsoft::WRL::ComPtr < ID3D12RootSignature> rootSignatureHSV_;
 	Microsoft::WRL::ComPtr < ID3D12RootSignature> rootSignatureSkinning_;
 	Microsoft::WRL::ComPtr < ID3D12RootSignature> rootSignatureSkybox_;
+	Microsoft::WRL::ComPtr < ID3D12RootSignature> computeRootSignature_;
 };
 

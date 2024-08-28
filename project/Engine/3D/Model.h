@@ -93,6 +93,8 @@ public:
 		std::vector<uint32_t> indices;
 		Material::OBJMaterialData material;
 		bool useTexture = false;
+		Microsoft::WRL::ComPtr<ID3D12Resource> skinningInfoResource;
+		uint32_t infoData = 0;
 	};
 	struct ModelData {
 		std::unordered_map<std::string, ObjectData> object;
@@ -112,6 +114,8 @@ public:
 		std::vector<Matrix4x4> inverseBindPoseMatrices;
 		Microsoft::WRL::ComPtr<ID3D12Resource> influenceResource;
 		D3D12_VERTEX_BUFFER_VIEW influenceBufferView;
+		std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE>influenceSrvHandle;
+		uint32_t influSrvIndex;
 		std::span<VertexInfluence> mappedInfluence;
 		Microsoft::WRL::ComPtr<ID3D12Resource> paletteResource;
 		std::span<WellForGPU> mappedPalette;
@@ -136,6 +140,8 @@ public:
 	/// 描画
 	/// </summary>
 	void Draw(WorldTransform& worldTransform, ViewProjection& viewProjection);
+
+	void ApplyCS();
 
 	void SetTextureHandle(D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU, uint32_t handleNum) { textureSrvHandleGPU_[handleNum] = textureSrvHandleGPU; }
 

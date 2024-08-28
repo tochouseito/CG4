@@ -25,6 +25,7 @@ Model::~Model() {
 	delete pointLight_;
 	delete spotLight_;
 	delete skinCluster_;
+	delete modelData_;
 }
 
 /*平面オブジェクト*/
@@ -173,6 +174,11 @@ Model::SkinCluster* Model::CreateSkinCluster(const Microsoft::WRL::ComPtr<ID3D12
 	SrvManager::GetInstance()->CreateSRVforStructuredBuffer(skinCluster->srvIndex, skinCluster->paletteResource.Get(), static_cast<UINT>(skeleton->joints.size()), sizeof(WellForGPU));
 	/*influencey用のResourceを確保。頂点ごとにInfluence情報を追加できるようにする*/
 	skinCluster->influenceResource = DirectXCommon::GetInstance()->CreateBufferResource(device.Get(), sizeof(VertexInfluence) * objectData.vertices.size());
+	/*influence用のsrvを作成*/
+	skinCluster->influSrvIndex = SrvManager::GetInstance()->Allocate();
+	skinCluster->influenceSrvHandle.first = SrvManager::GetInstance()->GetCPUDescriptorHandle(skinCluster->influSrvIndex);
+	skinCluster->influenceSrvHandle.second = SrvManager::GetInstance()->GetGPUDescriptorHandle(skinCluster->influSrvIndex);
+	SrvManager::GetInstance()->CreateSRVforStructuredBuffer(skinCluster->influSrvIndex, skinCluster->influenceResource.Get(), static_cast<UINT>(objectData.vertices.size()), sizeof(VertexInfluence));
 	VertexInfluence* mappedInflence = nullptr;
 	skinCluster->influenceResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedInflence));
 	std::memset(mappedInflence, 0, sizeof(VertexInfluence) * objectData.vertices.size());// 0埋め。weightを0にしておく
@@ -338,6 +344,13 @@ Model* Model::LordModel(const std::string& filename) {
 		std::memcpy(model->mesh_->GetMeshData(name).indexData
 			, model->modelData_->object[name].indices.data(),
 			sizeof(uint32_t) * model->modelData_->object[name].indices.size());
+
+		model->modelData_->object[name].skinningInfoResource = DirectXCommon::GetInstance()->CreateBufferResource(DirectXCommon::GetInstance()->GetDevice(), sizeof(uint32_t));
+		// データを書き込む
+
+		// 書き込むためのアドレスを取得
+		model->modelData_->object[name].skinningInfoResource->Map(0, nullptr, reinterpret_cast<void**>(&model->modelData_->object[name].infoData));
+		model->modelData_->object[name].infoData = static_cast<uint32_t>(model->modelData_->object[name].vertices.size());
 	}
 	//model->mesh_->SetVertices(static_cast<UINT>(model->modelData_.vertices.size()));
 	//model->mesh_->CreateOBJVertexResource(model->modelData_.vertices.size());
@@ -421,6 +434,21 @@ void Model::Draw(WorldTransform& worldTransform, ViewProjection& viewProjection)
 	// 描画！(DrawCall/ドローコール)。３頂点で1つのインスタンス。インスタンスについては今後
 	commandList->DrawInstanced(static_cast<UINT>(mesh_->GetVertices()), 1, 0, 0);
 
+}
+void Model::ApplyCS()
+{
+	// コマンドリストの取得
+	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
+	commandList->SetComputeRootSignature(GraphicsPipelineState::GetInstance()->GetRootSignatureCS());
+	commandList->SetPipelineState(GraphicsPipelineState::GetInstance()->GetPipelineStateCS());
+	for (std::string name : modelData_->names) {
+		commandList->SetComputeRootDescriptorTable(0, skinCluster_->paletteSrvHandle.second);
+		commandList->SetComputeRootDescriptorTable(1, mesh_->GetMeshData(name).inputVertexSrvHandle.second);
+		commandList->SetComputeRootDescriptorTable(2, skinCluster_->influenceSrvHandle.second);
+		commandList->SetComputeRootDescriptorTable(3, mesh_->GetMeshData(name).outputVertexSrvHandle.second);
+		commandList->SetComputeRootConstantBufferView(4, modelData_->object[name].skinningInfoResource->GetGPUVirtualAddress());
+		commandList->Dispatch(UINT(modelData_->object[name].vertices.size() + 1023) / 1024, 1, 1);
+	}
 }
 Model::OBJModelData Model::LoadObjFile(const std::string& directoryPath, const std::string& filename)
 {

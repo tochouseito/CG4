@@ -461,6 +461,7 @@
     <FxCompile Include="Resources\Shader\Random.PS.hlsl" />
     <FxCompile Include="Resources\Shader\ToHSV.PS.hlsl" />
     <FxCompile Include="Resources\Shader\SkinningObject3d.VS.hlsl" />
+    <FxCompile Include="Resources\Shader\Skinning.CS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />
