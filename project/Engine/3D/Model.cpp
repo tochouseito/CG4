@@ -345,12 +345,12 @@ Model* Model::LordModel(const std::string& filename) {
 			, model->modelData_->object[name].indices.data(),
 			sizeof(uint32_t) * model->modelData_->object[name].indices.size());
 
-		model->modelData_->object[name].skinningInfoResource = DirectXCommon::GetInstance()->CreateBufferResource(DirectXCommon::GetInstance()->GetDevice(), sizeof(uint32_t));
+		model->modelData_->object[name].skinningInfoResource = DirectXCommon::GetInstance()->CreateBufferResource(DirectXCommon::GetInstance()->GetDevice(), sizeof(SkinningInformation));
 		// データを書き込む
 
 		// 書き込むためのアドレスを取得
 		model->modelData_->object[name].skinningInfoResource->Map(0, nullptr, reinterpret_cast<void**>(&model->modelData_->object[name].infoData));
-		model->modelData_->object[name].infoData = static_cast<uint32_t>(model->modelData_->object[name].vertices.size());
+		model->modelData_->object[name].infoData->numVertices = static_cast<uint32_t>(model->modelData_->object[name].vertices.size());
 	}
 	//model->mesh_->SetVertices(static_cast<UINT>(model->modelData_.vertices.size()));
 	//model->mesh_->CreateOBJVertexResource(model->modelData_.vertices.size());
@@ -449,6 +449,54 @@ void Model::ApplyCS()
 		commandList->SetComputeRootConstantBufferView(4, modelData_->object[name].skinningInfoResource->GetGPUVirtualAddress());
 		commandList->Dispatch(UINT(modelData_->object[name].vertices.size() + 1023) / 1024, 1, 1);
 	}
+}
+void Model::DrawCS(WorldTransform& worldTransform, ViewProjection& viewProjection, std::string textureHandle)
+{
+	// コマンドリストの取得
+	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
+	// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけばいい
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	// Roosignatureを設定。PSOに設定しているけど別途設定が必要
+
+	commandList->SetGraphicsRootSignature(GraphicsPipelineState::GetRootSignature());
+	commandList->SetPipelineState(GraphicsPipelineState::GetPipelineState(current_blend));// PSOを設定
+
+	for (std::string name : modelData_->names) {
+
+		DirectXCommon::GetInstance()->BarrierTransition(mesh_->GetMeshData(name).outputResource.Get(),
+			D3D12_RESOURCE_STATE_UNORDERED_ACCESS,   // 現在の状態
+			D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER // 目標の状態
+		);
+		commandList->IASetVertexBuffers(0, 1, mesh_->GetOutputVertexBufferView(name));// VBVを設定
+
+		D3D12_INDEX_BUFFER_VIEW* v = mesh_->GetIndexBufferView(name);
+		commandList->IASetIndexBuffer(v);
+
+		// マテリアルCBufferの場所を設定
+		commandList->SetGraphicsRootConstantBufferView(0, material_->GetMaterialResource()->GetGPUVirtualAddress());
+
+		// wvp用のCBufferの場所を設定
+		commandList->SetGraphicsRootConstantBufferView(4, viewProjection.GetWvpResource()->GetGPUVirtualAddress());
+		// wvp用のCBufferの場所を設定
+		commandList->SetGraphicsRootConstantBufferView(3, directionalLight_->GetLightResource()->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootConstantBufferView(5, pointLight_->GetLightResource()->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootConstantBufferView(6, spotLight_->GetLightResource()->GetGPUVirtualAddress());
+		if (modelData_->object[name].useTexture) {
+			commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetTextureHandle(modelData_->object[name].material.textureFilePath));
+		}
+		commandList->SetGraphicsRootDescriptorTable(1, worldTransform.GetSrvHandleGPU());
+
+		//commandList->SetGraphicsRootDescriptorTable(7, TextureManager::GetInstance()->GetTextureHandle(textureHandle));
+		commandList->SetGraphicsRootDescriptorTable(7, TextureManager::GetInstance()->GetTextureHandle(environmentTexture_));
+		// 描画！(DrawCall/ドローコール)。３頂点で1つのインスタンス。インスタンスについては今後
+		//commandList->DrawInstanced(static_cast<UINT>(mesh_->GetDataVertices(name)), 1, 0, 0);
+		commandList->DrawIndexedInstanced(static_cast<UINT>(GetIndices(name)), 1, 0, 0, 0);
+		DirectXCommon::GetInstance()->BarrierTransition(mesh_->GetMeshData(name).outputResource.Get(),
+			D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,   // 現在の状態
+			D3D12_RESOURCE_STATE_UNORDERED_ACCESS // 目標の状態
+		);
+	}
+
 }
 Model::OBJModelData Model::LoadObjFile(const std::string& directoryPath, const std::string& filename)
 {

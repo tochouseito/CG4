@@ -32,6 +32,18 @@ void Mesh::CreateDateResource(size_t vertices, const std::string& name)
 	// 頂点リソースにデータを書き込む
 	// 書き込むためのアドレスを取得
 	meshData_[name].vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&meshData_[name].vertexData));
+
+	// 頂点バッファビューを作成する
+	// リソースの先頭のアドレスから使う
+	meshData_[name].outputVertexBufferView.BufferLocation = meshData_[name].outputResource->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点のサイズ
+	meshData_[name].outputVertexBufferView.SizeInBytes = sizeof(VertexData) * static_cast<UINT>(vertices);
+	// 1頂点アタリのサイズ
+	meshData_[name].outputVertexBufferView.StrideInBytes = sizeof(VertexData);
+
+	// 頂点リソースにデータを書き込む
+	// 書き込むためのアドレスを取得
+	//meshData_[name].outputResource->Map(0, nullptr, reinterpret_cast<void**>(&meshData_[name].outputData));
 }
 void Mesh::CreateBall(uint32_t Subdivision) {
 	kSubdivision_ = Subdivision;   // 分割数

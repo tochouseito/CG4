@@ -87,6 +87,10 @@ public:
 		Matrix4x4 inverseBindPoseMatrix;
 		std::vector<VertexWeightData> vertexWeights;
 	};
+	struct SkinningInformation
+	{
+		uint32_t numVertices;
+	};
 	struct ObjectData {
 		std::map<std::string, JointWeightData>skinClusterData;
 		std::vector < Mesh::VertexData>vertices;
@@ -94,7 +98,7 @@ public:
 		Material::OBJMaterialData material;
 		bool useTexture = false;
 		Microsoft::WRL::ComPtr<ID3D12Resource> skinningInfoResource;
-		uint32_t infoData = 0;
+		SkinningInformation* infoData;
 	};
 	struct ModelData {
 		std::unordered_map<std::string, ObjectData> object;
@@ -142,6 +146,8 @@ public:
 	void Draw(WorldTransform& worldTransform, ViewProjection& viewProjection);
 
 	void ApplyCS();
+
+	void DrawCS(WorldTransform& worldTransform, ViewProjection& viewProjection, std::string textureHandle);
 
 	void SetTextureHandle(D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU, uint32_t handleNum) { textureSrvHandleGPU_[handleNum] = textureSrvHandleGPU; }
 

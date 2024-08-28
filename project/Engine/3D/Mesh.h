@@ -37,6 +37,7 @@ public:
 		uint32_t srvIndex = 0;
 		VertexData* outputData;
 		Microsoft::WRL::ComPtr < ID3D12Resource> outputResource;
+		D3D12_VERTEX_BUFFER_VIEW outputVertexBufferView{};
 		std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE>outputVertexSrvHandle;
 		uint32_t outputsrvIndex = 0;
 		UINT vertices = 0;
@@ -81,6 +82,9 @@ public: // メンバ関数
 	void CreateDateResource(size_t vertices, const std::string& name);
 	D3D12_VERTEX_BUFFER_VIEW* GetVertexBufferView(const std::string& name) {
 		return &meshData_[name].vertexBufferView; 
+	}
+	D3D12_VERTEX_BUFFER_VIEW* GetOutputVertexBufferView(const std::string& name) {
+		return &meshData_[name].outputVertexBufferView; 
 	}
 	D3D12_VERTEX_BUFFER_VIEW GetVBV(const std::string& name) {
 		return meshData_[name].vertexBufferView;

@@ -58,6 +58,7 @@ void AnimatedCube::Updata()
 
 void AnimatedCube::Draw()
 {
+	model_->ApplyCS();
 	/*3Dモデルを描画*/
-	model_->Draw(worldTransform_, *viewProjection_, textureHandle_);
+	model_->DrawCS(worldTransform_, *viewProjection_, textureHandle_);
 }
