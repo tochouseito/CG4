@@ -462,6 +462,9 @@
     <FxCompile Include="Resources\Shader\ToHSV.PS.hlsl" />
     <FxCompile Include="Resources\Shader\SkinningObject3d.VS.hlsl" />
     <FxCompile Include="Resources\Shader\Skinning.CS.hlsl" />
+    <FxCompile Include="Resources\Shader\Particle.CS.hlsl" />
+    <FxCompile Include="Resources\Shader\GPUParticle.VS.hlsl" />
+    <FxCompile Include="Resources\Shader\GPUParticle.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

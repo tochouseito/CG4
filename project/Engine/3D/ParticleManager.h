@@ -45,6 +45,27 @@ public:/*パーティクルの要素構造体*/
 		std::unique_ptr<Mesh> mesh;
 		std::unique_ptr<DirectionalLight> directionalLight;
 	};
+	struct GPUParticle {
+		Vector3 translation;
+		Vector3 rotation;
+		Vector3 scale;
+		float lifeTime;
+		Vector3 velocity;
+		float currentTime;
+		Color color;
+	};
+	struct GPUParticleGroup {
+		std::list<Particle> particles;
+		Emitter emitter;
+		AccelerationField accelerationField;
+		std::string textureHandle;
+		std::unique_ptr<Mesh> mesh;
+		Microsoft::WRL::ComPtr<ID3D12Resource> particleResource;
+		std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE>particleSrvHandle;
+		std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE>particleUavHandle;
+		uint32_t srvIndex;
+		uint32_t uavIndex;
+	};
 public:
 	/// <summary>
 	/// コンストラクタ
@@ -58,7 +79,7 @@ public:
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(ViewProjection* viewProjection);
+	void Initialize(ViewProjection* viewProjection, std::string textureHandle);
 
 	/// <summary>
 	/// 更新
@@ -69,6 +90,10 @@ public:
 	/// 描画
 	/// </summary>
 	void Draw();
+
+	void DrawGPU();
+
+	void CreateGPUParticleResource();
 
 	/// <summary>
 	/// パーティクル追加
@@ -83,6 +108,20 @@ public:
 	/// <param name="translate"></param>
 	/// <returns></returns>
 	Particle MakeParticles(std::mt19937& randomEngine, const Vector3& translate);
+
+	/// <summary>
+	/// パーティクル追加
+	/// </summary>
+	/// <param name="name"></param>
+	void AddGPUParticle(std::string name, std::string textureHandle);
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="randomEngine"></param>
+	/// <param name="translate"></param>
+	/// <returns></returns>
+	GPUParticle MakeGPUParticles(std::mt19937& randomEngine, const Vector3& translate);
 
 	/// <summary>
 	/// 
@@ -101,5 +140,12 @@ private:
 	uint32_t kNumMaxInstance_ = 10;
 	/*パーティクルコンテナ*/
 	std::unordered_map<std::string, ParticleGroup>particleGroups;
+
+	/*GPU用*/
+	/*最大インスタンス数*/
+	uint32_t kGPUMAX_ = 1024;
+	/*パーティクルコンテナ*/
+	std::unordered_map<std::string, GPUParticleGroup>gpuParticleGroups;
+	GPUParticleGroup* gpuParticleGroup = nullptr;
 };
 

@@ -4,6 +4,7 @@
 #include"TextureManager.h"
 #include"Mymath.h"
 #include"imgui.h"
+#include"SrvManager.h"
 
 std::random_device seedGenerator;
 std::mt19937 randomEngine(seedGenerator());
@@ -14,14 +15,31 @@ ParticleManager::ParticleManager()
 
 ParticleManager::~ParticleManager()
 {
-
+	delete gpuParticleGroup;
 }
 
-void ParticleManager::Initialize(ViewProjection* viewProjection)
+void ParticleManager::Initialize(ViewProjection* viewProjection, std::string textureHandle)
 {
 	// PSOの生成
 	GraphicsPipelineState::GetInstance()->CreateParticleGraphicsPipeline(DirectXCommon::GetInstance()->GetDevice());
+	GraphicsPipelineState::GetInstance()->CreateComputePipelineParticle(DirectXCommon::GetInstance()->GetDevice());
+	GraphicsPipelineState::GetInstance()->CreateGraphicsPipelineGPUParticle(DirectXCommon::GetInstance()->GetDevice());
 	viewProjection_ = viewProjection;
+	gpuParticleGroup = new GPUParticleGroup();
+	/*リソースの作成*/
+	gpuParticleGroup->mesh = std::make_unique<Mesh>();
+	gpuParticleGroup->mesh->CreateParticleVertexResource(size_t(6));
+	gpuParticleGroup->emitter.count = 3;
+	gpuParticleGroup->emitter.frequency = 0.5f;
+	gpuParticleGroup->emitter.frequencyTime = 0.0f;
+	gpuParticleGroup->emitter.worldTransform.translation_ = { 0.0f,0.0f,0.0f };
+	gpuParticleGroup->emitter.worldTransform.rotation_ = { 0.0f,0.0f,0.0f };
+	gpuParticleGroup->emitter.worldTransform.scale_ = { 1.0f,1.0f,1.0f };
+	gpuParticleGroup->accelerationField.acceleration = { 15.0f,0.0f,0.0f };
+	gpuParticleGroup->accelerationField.area.min = { -1.0f,-1.0f,-1.0f };
+	gpuParticleGroup->accelerationField.area.max = { 1.0f,1.0f,1.0f };
+	gpuParticleGroup->textureHandle = textureHandle;
+	CreateGPUParticleResource();
 }
 
 void ParticleManager::Update()
@@ -117,6 +135,50 @@ void ParticleManager::Draw()
 	}
 }
 
+void ParticleManager::CreateGPUParticleResource()
+{
+	gpuParticleGroup->particleResource = DirectXCommon::GetInstance()->CreateUAVResource(DirectXCommon::GetInstance()->GetDevice(), sizeof(GPUParticle) * kGPUMAX_);
+
+	gpuParticleGroup->srvIndex = SrvManager::GetInstance()->Allocate();
+	gpuParticleGroup->uavIndex= SrvManager::GetInstance()->Allocate();
+	gpuParticleGroup->particleSrvHandle.first = SrvManager::GetInstance()->GetCPUDescriptorHandle(gpuParticleGroup->srvIndex);
+	gpuParticleGroup->particleSrvHandle.second = SrvManager::GetInstance()->GetGPUDescriptorHandle(gpuParticleGroup->srvIndex);
+	gpuParticleGroup->particleUavHandle.first = SrvManager::GetInstance()->GetCPUDescriptorHandle(gpuParticleGroup->uavIndex);
+	gpuParticleGroup->particleUavHandle.second = SrvManager::GetInstance()->GetGPUDescriptorHandle(gpuParticleGroup->uavIndex);
+	SrvManager::GetInstance()->CreateUAVforStructuredBuffer(gpuParticleGroup->uavIndex, gpuParticleGroup->particleResource.Get(), 1, sizeof(GPUParticle) * kGPUMAX_);
+	SrvManager::GetInstance()->CreateSRVforStructuredBuffer(gpuParticleGroup->srvIndex, gpuParticleGroup->particleResource.Get(), 1, sizeof(GPUParticle) * kGPUMAX_);
+}
+
+void ParticleManager::DrawGPU()
+{
+	// コマンドリストの取得
+	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
+	commandList->SetComputeRootSignature(GraphicsPipelineState::GetInstance()->GetRootSignatureCSParticle());
+	commandList->SetPipelineState(GraphicsPipelineState::GetInstance()->GetPipelineStateCSParticle());
+	commandList->SetComputeRootDescriptorTable(0, gpuParticleGroup->particleUavHandle.second);
+	commandList->Dispatch(1, 1, 1);
+
+	// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけばいい
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	// Roosignatureを設定。PSOに設定しているけど別途設定が必要
+	commandList->SetGraphicsRootSignature(GraphicsPipelineState::GetRootSignatureGPUParticle());
+	commandList->SetPipelineState(GraphicsPipelineState::GetPipelineStateGPUParticle(2));// PSOを設定
+	commandList->IASetVertexBuffers(0, 1, gpuParticleGroup->mesh->GetVertexBufferView());// VBVを設定
+	DirectXCommon::GetInstance()->BarrierTransition(gpuParticleGroup->particleResource.Get(),
+		D3D12_RESOURCE_STATE_UNORDERED_ACCESS,   // 現在の状態
+		D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE // 目標の状態
+	);
+	commandList->SetGraphicsRootDescriptorTable(0, gpuParticleGroup->particleSrvHandle.second);
+	commandList->SetGraphicsRootConstantBufferView(1, viewProjection_->GetWvpResource()->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetTextureHandle(gpuParticleGroup->textureHandle));
+
+	commandList->DrawInstanced(static_cast<UINT> (6), 1024, 0, 0);
+	DirectXCommon::GetInstance()->BarrierTransition(gpuParticleGroup->particleResource.Get(),
+		D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,   // 現在の状態
+		D3D12_RESOURCE_STATE_UNORDERED_ACCESS // 目標の状態
+	);
+}
+
 void ParticleManager::AddParticle(std::string name, std::string textureHandle)
 {
 	/*同じ名前のパーティクルがあれば追加しない*/
@@ -166,6 +228,54 @@ ParticleManager::Particle ParticleManager::MakeParticles(std::mt19937& randomEng
 	particles.currentTime = 0.0f;
 	return particles;
 }
+
+void ParticleManager::AddGPUParticle(std::string name, std::string textureHandle)
+{
+	/*同じ名前のパーティクルがあれば追加しない*/
+	if (gpuParticleGroups.contains(name)) {
+		return;
+	}
+	/*パーティクルを追加してデータを書き込む*/
+	GPUParticleGroup& gpuParticleGroup = gpuParticleGroups[name];
+	/*リソースの作成*/
+	gpuParticleGroup.mesh = std::make_unique<Mesh>();
+	gpuParticleGroup.mesh->CreateParticleVertexResource(size_t(6));
+	gpuParticleGroup.emitter.count = 3;
+	gpuParticleGroup.emitter.frequency = 0.5f;
+	gpuParticleGroup.emitter.frequencyTime = 0.0f;
+	gpuParticleGroup.emitter.worldTransform.translation_ = { 0.0f,0.0f,0.0f };
+	gpuParticleGroup.emitter.worldTransform.rotation_ = { 0.0f,0.0f,0.0f };
+	gpuParticleGroup.emitter.worldTransform.scale_ = { 1.0f,1.0f,1.0f };
+	gpuParticleGroup.accelerationField.acceleration = { 15.0f,0.0f,0.0f };
+	gpuParticleGroup.accelerationField.area.min = { -1.0f,-1.0f,-1.0f };
+	gpuParticleGroup.accelerationField.area.max = { 1.0f,1.0f,1.0f };
+	/*gpuParticleGroup.worldTransform.numInstance_ = 100;
+	gpuParticleGroup.worldTransform.Initialize();
+	gpuParticleGroup.objectColor.numInstance_ = 100;
+	gpuParticleGroup.objectColor.Initialize();*/
+	gpuParticleGroup.textureHandle = textureHandle;
+	//gpuParticleGroup.worldTransform.rootMatrix_ = MakeIdentity4x4();
+}
+
+ParticleManager::GPUParticle ParticleManager::MakeGPUParticles(std::mt19937& randomEngine, const Vector3& translate)
+{
+	GPUParticle particles;
+	std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
+	std::uniform_real_distribution<float> distColor(0.0f, 1.0f);
+	std::uniform_real_distribution<float> distTime(1.0f, 3.0f);
+
+	particles.scale = { 1.0f,1.0f,1.0f };
+	particles.rotation = { 0.0f,0.0f,0.0f };
+	Vector3 randomTranslate = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
+	particles.translation = translate + randomTranslate;
+	particles.velocity = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
+	particles.color = { distColor(randomEngine),distColor(randomEngine),distColor(randomEngine) ,1.0f };
+	particles.lifeTime = distTime(randomEngine);
+	particles.currentTime = 0.0f;
+	return particles;
+}
+
+
 
 std::list<ParticleManager::Particle> ParticleManager::Emit(const Emitter& emitter, std::mt19937& randomEngine)
 {

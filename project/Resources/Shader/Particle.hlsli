@@ -5,3 +5,20 @@ struct VertexShaderOutput
     float3 normal : NORMAL0;
     float4 color : COLOR0;
 };
+struct GPUParticle
+{
+    float32_t3 translate;
+    float32_t3 rotate;
+    float32_t3 scale;
+    float32_t lifeTIme;
+    float32_t3 velocity;
+    float32_t currentTime;
+    float32_t4 color;
+};
+struct PerView
+{
+    float32_t4x4 View;
+    float32_t4x4 Projection;
+    //float32_t4x4 billboardMatrix;
+    float32_t3 cameraPosition;
+};

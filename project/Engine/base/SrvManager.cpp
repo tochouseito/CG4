@@ -82,8 +82,17 @@ void SrvManager::CreateUAVforStructuredBuffer(uint32_t uavIndex, ID3D12Resource*
 	uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 	uavDesc.Buffer.NumElements = numElements;
 	uavDesc.Buffer.StructureByteStride = structuredByteStride;
-
+	/*UAVとSRVのインデックスがごっちゃになってる*/
 	dxCommon_->GetDevice()->CreateUnorderedAccessView(pResource,nullptr ,&uavDesc, GetCPUDescriptorHandle(uavIndex));
+	/*D3D12_SHADER_RESOURCE_VIEW_DESC instancingSrvDesc{};
+	instancingSrvDesc.Format = DXGI_FORMAT_UNKNOWN;
+	instancingSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	instancingSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+	instancingSrvDesc.Buffer.FirstElement = 0;
+	instancingSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+	instancingSrvDesc.Buffer.NumElements = numElements;
+	instancingSrvDesc.Buffer.StructureByteStride = structuredByteStride;
+	dxCommon_->GetDevice()->CreateShaderResourceView(pResource, &instancingSrvDesc, GetCPUDescriptorHandle(uavIndex));*/
 }
 void SrvManager::PreDraw() {
 	// 描画用のDescriptorHeapの設定

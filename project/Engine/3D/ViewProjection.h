@@ -11,6 +11,7 @@ struct ConstBufferDataViewProjection {
 	Matrix4x4 Projection;
 	Vector3 cameraPosition;
 };
+
 struct CBProjection {
 	Matrix4x4 ProjectionInverse;
 };

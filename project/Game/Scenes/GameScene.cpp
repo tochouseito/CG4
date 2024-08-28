@@ -96,7 +96,7 @@ void GameScene::Initialize() {
 	}
 	///*パーティクルマネージャの生成*/
 	particleManager_ = std::make_unique<ParticleManager>();
-	particleManager_->Initialize(&viewProjection_);
+	particleManager_->Initialize(&viewProjection_,textureHandle_[1]);
 	particleManager_->AddParticle("circle", textureHandle_[1]);
 	particleManager_->AddParticle("uvChecker", textureHandle_[0]);
 	/*エミッターマネージャの生成*/
@@ -198,7 +198,7 @@ void GameScene::Update() {
 	sprite_->Update();
 	//particles_->Update();
 	/*パーティクルマネージャの更新*/
-	//particleManager_->Update();
+	particleManager_->Update();
 	//emitterManager_->Update();
 	/*bunny_->Updata();*/
 	/*multiMaterial_->Updata();
@@ -240,7 +240,8 @@ void GameScene::Draw() {
 	//primitive_->Draw();
 	//particles_->Draw();
 	/*パーティクルマネージャの描画*/
-	//particleManager_->Draw();
+	particleManager_->Draw();
+	particleManager_->DrawGPU();
 	//emitterManager_->Draw();
 	//sprite_->Draw();
 	//bunny_->Draw();
@@ -249,5 +250,5 @@ void GameScene::Draw() {
 	//suzanne_->Draw();
 	//utahTeapot_->Draw();
 	animatedCube_->Draw();
-	skybox_->Draw();
+	//skybox_->Draw();
 }
