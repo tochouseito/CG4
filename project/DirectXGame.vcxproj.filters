@@ -487,5 +487,7 @@
     <None Include="Resources\Shader\Skybox.hlsli" />
     <None Include="Resources\Shader\Skybox.VS.hlsl" />
     <None Include="Resources\Shader\Skybox.PS.hlsl" />
+    <None Include="Resources\Shader\Random.hlsli" />
+    <None Include="Resources\Shader\Mymath.hlsli" />
   </ItemGroup>
 </Project>

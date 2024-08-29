@@ -62,6 +62,11 @@ public:/*パーティクルの要素構造体*/
 		float frequencyTime;// 射出間隔調整用時間
 		uint32_t emit;// 射出許可
 	};
+	struct PerFrame
+	{
+		float time;
+		float deltaTime;
+	};
 	struct GPUParticleGroup {
 		std::list<GPUParticle> particles;
 		//Emitter emitter;
@@ -75,6 +80,8 @@ public:/*パーティクルの要素構造体*/
 		uint32_t srvIndex;
 		uint32_t uavIndex;
 		Microsoft::WRL::ComPtr<ID3D12Resource> emitResource;
+		Microsoft::WRL::ComPtr<ID3D12Resource> frameResource;
+		PerFrame* perFrame = nullptr;
 	};
 public:
 	/// <summary>
@@ -106,6 +113,8 @@ public:
 	void CreateGPUParticleResource();
 
 	void CreateGPUEmitResource();
+
+	void CreateGPUFrameResource();
 
 	/// <summary>
 	/// パーティクル追加

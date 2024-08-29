@@ -396,9 +396,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shader\FullScreen.hlsli" />
+    <None Include="Resources\Shader\Mymath.hlsli" />
     <None Include="Resources\Shader\obj3d.hlsli" />
     <None Include="Resources\Shader\Particle.hlsli" />
     <None Include="Resources\Shader\Primitive.hlsli" />
+    <None Include="Resources\Shader\Random.hlsli" />
     <None Include="Resources\Shader\Skybox.hlsli" />
     <None Include="Resources\Shader\Skybox.PS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

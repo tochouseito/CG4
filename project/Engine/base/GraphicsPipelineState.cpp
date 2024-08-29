@@ -384,7 +384,7 @@ void GraphicsPipelineState::CreateComputePipelineEmit(ID3D12Device* device)
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 	// RootParameter作成。PixelShaderのMaterialとVertexShaderのTransform
-	D3D12_ROOT_PARAMETER rootParameter[2] = {};
+	D3D12_ROOT_PARAMETER rootParameter[3] = {};
 
 
 
@@ -401,7 +401,11 @@ void GraphicsPipelineState::CreateComputePipelineEmit(ID3D12Device* device)
 
 	rootParameter[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;// CBVを使う
 	rootParameter[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;// PixelShaderを使う
-	rootParameter[1].Descriptor.ShaderRegister = 0;// レジスタ番号０とバインド
+	rootParameter[1].Descriptor.ShaderRegister = 0;// レジスタ番号0とバインド
+
+	rootParameter[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;// CBVを使う
+	rootParameter[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;// PixelShaderを使う
+	rootParameter[2].Descriptor.ShaderRegister = 1;// レジスタ番号1とバインド
 
 
 	descriptionRooTSignature.pParameters = rootParameter;// ルートパラメータ配列へのポインタ

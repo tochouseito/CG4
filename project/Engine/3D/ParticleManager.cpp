@@ -32,6 +32,7 @@ void ParticleManager::Initialize(ViewProjection* viewProjection, std::string tex
 	gpuParticleGroup->mesh->CreateParticleVertexResource(size_t(6));
 	CreateGPUParticleResource();
 	CreateGPUEmitResource();
+	CreateGPUFrameResource();
 	/*gpuParticleGroup->emitter.count = 3;
 	gpuParticleGroup->emitter.frequency = 0.5f;
 	gpuParticleGroup->emitter.frequencyTime = 0.0f;
@@ -39,7 +40,7 @@ void ParticleManager::Initialize(ViewProjection* viewProjection, std::string tex
 	gpuParticleGroup->emitter.worldTransform.rotation_ = { 0.0f,0.0f,0.0f };
 	gpuParticleGroup->emitter.worldTransform.scale_ = { 1.0f,1.0f,1.0f };*/
 	gpuParticleGroup->emitterSphere->count = 10;
-	gpuParticleGroup->emitterSphere->frequency = 0.0f;
+	gpuParticleGroup->emitterSphere->frequency = 0.5f;
 	gpuParticleGroup->emitterSphere->frequencyTime = 0.0f;
 	gpuParticleGroup->emitterSphere->translate = Vector3(0.0f, 0.0f, 0.0f);
 	gpuParticleGroup->emitterSphere->radius = 1.0f;
@@ -48,6 +49,7 @@ void ParticleManager::Initialize(ViewProjection* viewProjection, std::string tex
 	gpuParticleGroup->accelerationField.area.min = { -1.0f,-1.0f,-1.0f };
 	gpuParticleGroup->accelerationField.area.max = { 1.0f,1.0f,1.0f };
 	gpuParticleGroup->textureHandle = textureHandle;
+	gpuParticleGroup->perFrame->deltaTime = 1.0f / 60.0f;
 }
 
 void ParticleManager::Update()
@@ -116,14 +118,17 @@ void ParticleManager::Update()
 		particle.second.numInstance = numInstance;
 	}
 	gpuParticleGroup->emitterSphere->frequencyTime += kDeltaTime;// タイム加算
+	gpuParticleGroup->perFrame->time += kDeltaTime;
 	// 射出間隔を上回ったら射出許可を出して時間を調整
 	if (gpuParticleGroup->emitterSphere->frequency <= gpuParticleGroup->emitterSphere->frequencyTime) {
 		gpuParticleGroup->emitterSphere->frequencyTime -= gpuParticleGroup->emitterSphere->frequency;
 		gpuParticleGroup->emitterSphere->emit = 1;
+
 		// 射出間隔を上回ってないので、許可は出せない
 	} else {
 		gpuParticleGroup->emitterSphere->emit = 0;
 	}
+
 }
 
 void ParticleManager::Draw()
@@ -174,6 +179,14 @@ void ParticleManager::CreateGPUEmitResource()
 	gpuParticleGroup->emitResource->Map(0, nullptr, reinterpret_cast<void**>(&gpuParticleGroup->emitterSphere));
 }
 
+void ParticleManager::CreateGPUFrameResource()
+{
+	// リソースを作る。Matrix4x4 1つ分のサイズを用意する
+	gpuParticleGroup->frameResource = DirectXCommon::GetInstance()->CreateBufferResource(DirectXCommon::GetInstance()->GetDevice(), sizeof(PerFrame));
+	// 書き込むためのアドレスを取得
+	gpuParticleGroup->frameResource->Map(0, nullptr, reinterpret_cast<void**>(&gpuParticleGroup->perFrame));
+}
+
 void ParticleManager::DrawGPU()
 {
 	// コマンドリストの取得
@@ -188,6 +201,7 @@ void ParticleManager::DrawGPU()
 	commandList->SetPipelineState(GraphicsPipelineState::GetInstance()->GetPipelineStateCSEmit());
 	commandList->SetComputeRootDescriptorTable(0, gpuParticleGroup->particleUavHandle.second);
 	commandList->SetComputeRootConstantBufferView(1, gpuParticleGroup->emitResource.Get()->GetGPUVirtualAddress());
+	commandList->SetComputeRootConstantBufferView(2, gpuParticleGroup->frameResource.Get()->GetGPUVirtualAddress());
 	commandList->Dispatch(1, 1, 1);
 
 	// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけばいい

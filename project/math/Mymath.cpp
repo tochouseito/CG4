@@ -218,6 +218,7 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Ve
 	Matrix4x4 translateMatrix = MakeTranslateMatrix(translate);
 	//result = Multiply(rotateXYZMatrix, Multiply(scaleMatrix, translateMatrix));
 	result = Multiply(scaleMatrix, Multiply(rotateXYZMatrix, translateMatrix));
+	//result = Multiply(translateMatrix, Multiply(scaleMatrix, rotateXYZMatrix));
 	return result;
 }
 // 3次元アフィン変換行列
