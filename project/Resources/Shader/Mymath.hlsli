@@ -40,3 +40,23 @@ float32_t4x4 MakeAffineMatrix(float32_t3 scale, float32_t3 rotate, float32_t3 tr
     
     return mul(translateMatrix, mul(rotateMatrix, scaleMatrix));
 }
+float4x4 MakeBillboardMatrix(float4x4 cameraMatrix)
+{
+    // Rotate 180 degrees around the Y-axis to make the object face the camera
+    float4x4 backToFrontMatrix = float4x4(
+        -1.0f, 0.0f, 0.0f, 0.0f,
+         0.0f, 1.0f, 0.0f, 0.0f,
+         0.0f, 0.0f, -1.0f, 0.0f,
+         0.0f, 0.0f, 0.0f, 1.0f
+    );
+
+    // Multiply the rotation matrix with the camera matrix to get the billboard matrix
+    float4x4 billboardMatrix = mul(backToFrontMatrix, cameraMatrix);
+
+    // Set the translation part of the matrix to zero
+    billboardMatrix[3][0] = 0.0f;
+    billboardMatrix[3][1] = 0.0f;
+    billboardMatrix[3][2] = 0.0f;
+
+    return billboardMatrix;
+}

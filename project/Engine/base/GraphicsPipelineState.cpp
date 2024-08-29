@@ -114,7 +114,7 @@ void GraphicsPipelineState::CreateComputePipelineParticle(ID3D12Device* device)
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 	// RootParameter作成。PixelShaderのMaterialとVertexShaderのTransform
-	D3D12_ROOT_PARAMETER rootParameter[1] = {};
+	D3D12_ROOT_PARAMETER rootParameter[2] = {};
 
 
 
@@ -128,6 +128,17 @@ void GraphicsPipelineState::CreateComputePipelineParticle(ID3D12Device* device)
 	rootParameter[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 	rootParameter[0].DescriptorTable.pDescriptorRanges = &descriptorUAVRange;// Tableの中身の配列を指定
 	rootParameter[0].DescriptorTable.NumDescriptorRanges = 1;// Tableで利用する数
+
+	D3D12_DESCRIPTOR_RANGE descriptorUAVRange1 = {};
+	descriptorUAVRange1.BaseShaderRegister = 1;
+	descriptorUAVRange1.NumDescriptors = 1;
+	descriptorUAVRange1.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+	descriptorUAVRange1.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	rootParameter[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameter[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	rootParameter[1].DescriptorTable.pDescriptorRanges = &descriptorUAVRange1;// Tableの中身の配列を指定
+	rootParameter[1].DescriptorTable.NumDescriptorRanges = 1;// Tableで利用する数
 
 
 	descriptionRooTSignature.pParameters = rootParameter;// ルートパラメータ配列へのポインタ
@@ -384,7 +395,7 @@ void GraphicsPipelineState::CreateComputePipelineEmit(ID3D12Device* device)
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 	// RootParameter作成。PixelShaderのMaterialとVertexShaderのTransform
-	D3D12_ROOT_PARAMETER rootParameter[3] = {};
+	D3D12_ROOT_PARAMETER rootParameter[4] = {};
 
 
 
@@ -406,6 +417,17 @@ void GraphicsPipelineState::CreateComputePipelineEmit(ID3D12Device* device)
 	rootParameter[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;// CBVを使う
 	rootParameter[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;// PixelShaderを使う
 	rootParameter[2].Descriptor.ShaderRegister = 1;// レジスタ番号1とバインド
+
+	D3D12_DESCRIPTOR_RANGE descriptorUAVRange1 = {};
+	descriptorUAVRange1.BaseShaderRegister = 1;
+	descriptorUAVRange1.NumDescriptors = 1;
+	descriptorUAVRange1.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+	descriptorUAVRange1.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	rootParameter[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameter[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	rootParameter[3].DescriptorTable.pDescriptorRanges = &descriptorUAVRange1;// Tableの中身の配列を指定
+	rootParameter[3].DescriptorTable.NumDescriptorRanges = 1;// Tableで利用する数
 
 
 	descriptionRooTSignature.pParameters = rootParameter;// ルートパラメータ配列へのポインタ

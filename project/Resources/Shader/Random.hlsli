@@ -7,6 +7,7 @@ float rand3dTo1d(float3 value, float3 dotDir = float3(12.9898, 78.233, 37.719))
     float random = dot(smallValue, dotDir);
     //make value more random by making it bigger and then taking teh factional part
     random = frac(sin(random) * 143758.5453);
+    random = random * 2.0 - 1.0;
     return random;
 }
 //get a 3d random value from a 3d value

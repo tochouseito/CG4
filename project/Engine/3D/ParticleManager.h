@@ -82,6 +82,9 @@ public:/*パーティクルの要素構造体*/
 		Microsoft::WRL::ComPtr<ID3D12Resource> emitResource;
 		Microsoft::WRL::ComPtr<ID3D12Resource> frameResource;
 		PerFrame* perFrame = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12Resource> counterResource;
+		std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE>counterUavHandle;
+		uint32_t counterUavIndex;
 	};
 public:
 	/// <summary>
@@ -115,6 +118,8 @@ public:
 	void CreateGPUEmitResource();
 
 	void CreateGPUFrameResource();
+
+	void CreateGPUCounterResource();
 
 	/// <summary>
 	/// パーティクル追加
@@ -168,5 +173,7 @@ private:
 	/*パーティクルコンテナ*/
 	std::unordered_map<std::string, GPUParticleGroup>gpuParticleGroups;
 	GPUParticleGroup* gpuParticleGroup = nullptr;
+
+	bool init = true;
 };
 

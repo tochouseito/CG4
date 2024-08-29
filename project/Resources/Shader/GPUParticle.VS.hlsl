@@ -17,11 +17,11 @@ VertexShaderOutput main(VertexShaderInput input, uint32_t instanceId : SV_Instan
     GPUParticle particle = gParticles[instanceId];
     float32_t4x4 WVP = mul(gPerView.View, gPerView.Projection);
     float32_t4x4 worldMatrix = MakeAffineMatrix(particle.scale, particle.rotate, particle.translate); // worldMatrixを作る
-    
+    //float32_t4x4 camaraMatrix=MakeAffineMatrix(gPerView.cameraPosition)
     worldMatrix[0] *= particle.scale.x;
     worldMatrix[1] *= particle.scale.y;
     worldMatrix[2] *= particle.scale.z;
-    worldMatrix[3].xyz *= particle.translate;
+    worldMatrix[3].xyz = particle.translate;
     output.position = mul(input.position, mul(worldMatrix, WVP));
     //output.position = mul(input.position, WVP);
     output.texcoord = input.texcoord;
