@@ -25,6 +25,7 @@ void ParticleManager::Initialize(ViewProjection* viewProjection, std::string tex
 	GraphicsPipelineState::GetInstance()->CreateComputePipelineParticle(DirectXCommon::GetInstance()->GetDevice());
 	GraphicsPipelineState::GetInstance()->CreateGraphicsPipelineGPUParticle(DirectXCommon::GetInstance()->GetDevice());
 	GraphicsPipelineState::GetInstance()->CreateComputePipelineEmit(DirectXCommon::GetInstance()->GetDevice());
+	GraphicsPipelineState::GetInstance()->CreateComputePipelineUpdate(DirectXCommon::GetInstance()->GetDevice());
 	viewProjection_ = viewProjection;
 	gpuParticleGroup = new GPUParticleGroup();
 	/*リソースの作成*/
@@ -34,6 +35,7 @@ void ParticleManager::Initialize(ViewProjection* viewProjection, std::string tex
 	CreateGPUEmitResource();
 	CreateGPUFrameResource();
 	CreateGPUCounterResource();
+	
 	/*gpuParticleGroup->emitter.count = 3;
 	gpuParticleGroup->emitter.frequency = 0.5f;
 	gpuParticleGroup->emitter.frequencyTime = 0.0f;
@@ -211,13 +213,33 @@ void ParticleManager::DrawGPU()
 		commandList->Dispatch(1, 1, 1);
 		init = false;
 	}
-
+	/*Emit*/
 	commandList->SetComputeRootSignature(GraphicsPipelineState::GetInstance()->GetRootSignatureCSEmit());
 	commandList->SetPipelineState(GraphicsPipelineState::GetInstance()->GetPipelineStateCSEmit());
 	commandList->SetComputeRootDescriptorTable(0, gpuParticleGroup->particleUavHandle.second);
 	commandList->SetComputeRootConstantBufferView(1, gpuParticleGroup->emitResource.Get()->GetGPUVirtualAddress());
 	commandList->SetComputeRootConstantBufferView(2, gpuParticleGroup->frameResource.Get()->GetGPUVirtualAddress());
 	commandList->SetComputeRootDescriptorTable(3, gpuParticleGroup->counterUavHandle.second);
+	commandList->Dispatch(1, 1, 1);
+
+	/*EmitとUpdateの並列を阻止*/
+	D3D12_RESOURCE_BARRIER barrier{};
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier.UAV.pResource = gpuParticleGroup->particleResource.Get();
+	commandList->ResourceBarrier(1, &barrier);
+
+	D3D12_RESOURCE_BARRIER barrier2{};
+	barrier2.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+	barrier2.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier2.UAV.pResource = gpuParticleGroup->counterResource.Get();
+	commandList->ResourceBarrier(1, &barrier2);
+
+	/*Update*/
+	commandList->SetComputeRootSignature(GraphicsPipelineState::GetInstance()->GetRootSignatureCSUpdate());
+	commandList->SetPipelineState(GraphicsPipelineState::GetInstance()->GetPipelineStateCSUpdate());
+	commandList->SetComputeRootDescriptorTable(0, gpuParticleGroup->particleUavHandle.second);
+	commandList->SetComputeRootConstantBufferView(1, gpuParticleGroup->frameResource.Get()->GetGPUVirtualAddress());
 	commandList->Dispatch(1, 1, 1);
 
 	// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけばいい
