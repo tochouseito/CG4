@@ -2,27 +2,29 @@
 #include"Random.hlsli"
 class RandomGenerator
 {
-    float32_t3 seed;
-    float32_t3 Generate3d()
+    float3 seed;
+    float3 Generate3d()
     {
         seed = rand3dTo3d(seed);
         return seed;
     }
-    float32_t Generate1d()
+    float Generate1d()
     {
-        float32_t result = rand3dTo1d(seed);
+        float result = rand3dTo1d(seed);
         seed.x = result;
         return result;
     }
 };
-static const uint32_t kMaxParticles = 1024;
+static const uint kMaxParticles = 1024;
 RWStructuredBuffer<GPUParticle> gParticles : register(u0);
 ConstantBuffer<EmitterSphere> gEmitter : register(b0);
 ConstantBuffer<PerFrame> gPerFrame : register(b1);
-RWStructuredBuffer<int32_t> gFreeCounter : register(u1);
+//RWStructuredBuffer<int> gFreeCounter : register(u1);
+RWStructuredBuffer<int> gFreeListIndex : register(u1);
+RWStructuredBuffer<uint> gFreeList : register(u2);
 
 [numthreads(1, 1, 1)]
-void main( uint32_t3 DTid : SV_DispatchThreadID )
+void main( uint3 DTid : SV_DispatchThreadID )
 {
     
     if (gEmitter.emit != 0)
@@ -30,20 +32,39 @@ void main( uint32_t3 DTid : SV_DispatchThreadID )
         RandomGenerator generator;
         generator.seed = (DTid + gPerFrame.time) * gPerFrame.time;
             // Generate3d呼ぶたびにseedが変わるので結果すべての乱数が変わる
-        for (uint32_t countIndex = 0; countIndex < gEmitter.count; ++countIndex)
+        for (uint countIndex = 0; countIndex < gEmitter.count; ++countIndex)
         {
-            int32_t particleIndex;
-            InterlockedAdd(gFreeCounter[0], 1, particleIndex); // gFreeCounter[0]に1を足し、足す前の値をparticleIndexに格納する
-                // 最大数よりもparticleの数が少なければ射出可能
-            if (particleIndex < kMaxParticles)
+            //int particleIndex;
+            int freeListIndex;
+            // freeListのindexを一つ前に設定し、現在のIndexを取得する
+            InterlockedAdd(gFreeListIndex[0], -1, freeListIndex);
+            if (0 <= freeListIndex && freeListIndex < kMaxParticles)
             {
-                gParticles[particleIndex].scale = float32_t3(1.5f, 1.5f, 1.5f);
+                uint particleIndex = gFreeList[freeListIndex];
+                gParticles[particleIndex].scale = float3(1.5f, 1.5f, 1.5f);
                 gParticles[particleIndex].translate = generator.Generate3d();
                 gParticles[particleIndex].color.rgb = generator.Generate3d();
                 gParticles[particleIndex].color.a = 1.0f;
                 gParticles[particleIndex].velocity = generator.Generate3d();
                 gParticles[particleIndex].lifeTime = 2.0f;
+            }else{
+              // 発生させられなかったので、減らしてしまった分元に戻す。これを忘れると発生させられなかった分だけIndexが減ってしまう
+                InterlockedAdd(gFreeListIndex[0], 1);
+                // Emit中にParticleは消えないので、この後発生することはないためBreakして終わらせる
+                break;
+
             }
+            //    InterlockedAdd(gFreeCounter[0], 1, particleIndex); // gFreeCounter[0]に1を足し、足す前の値をparticleIndexに格納する
+            //    // 最大数よりもparticleの数が少なければ射出可能
+            //if (particleIndex < kMaxParticles)
+            //{
+            //    gParticles[particleIndex].scale = float3(1.5f, 1.5f, 1.5f);
+            //    gParticles[particleIndex].translate = generator.Generate3d();
+            //    gParticles[particleIndex].color.rgb = generator.Generate3d();
+            //    gParticles[particleIndex].color.a = 1.0f;
+            //    gParticles[particleIndex].velocity = generator.Generate3d();
+            //    gParticles[particleIndex].lifeTime = 2.0f;
+            //}
         }
 
     }

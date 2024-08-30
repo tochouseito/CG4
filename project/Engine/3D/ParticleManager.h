@@ -85,6 +85,12 @@ public:/*パーティクルの要素構造体*/
 		Microsoft::WRL::ComPtr<ID3D12Resource> counterResource;
 		std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE>counterUavHandle;
 		uint32_t counterUavIndex;
+		Microsoft::WRL::ComPtr<ID3D12Resource> listResource;
+		std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE>listUavHandle;
+		uint32_t listUavIndex;
+		Microsoft::WRL::ComPtr<ID3D12Resource> listIndexResource;
+		std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE>listIndexUavHandle;
+		uint32_t listIndexUavIndex;
 	};
 public:
 	/// <summary>
@@ -120,6 +126,8 @@ public:
 	void CreateGPUFrameResource();
 
 	void CreateGPUCounterResource();
+
+	void CreateGPUFreeListResource();
 
 	/// <summary>
 	/// パーティクル追加

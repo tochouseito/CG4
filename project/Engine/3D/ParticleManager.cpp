@@ -35,7 +35,7 @@ void ParticleManager::Initialize(ViewProjection* viewProjection, std::string tex
 	CreateGPUEmitResource();
 	CreateGPUFrameResource();
 	CreateGPUCounterResource();
-	
+	CreateGPUFreeListResource();
 	/*gpuParticleGroup->emitter.count = 3;
 	gpuParticleGroup->emitter.frequency = 0.5f;
 	gpuParticleGroup->emitter.frequencyTime = 0.0f;
@@ -200,6 +200,23 @@ void ParticleManager::CreateGPUCounterResource()
 	SrvManager::GetInstance()->CreateUAVforStructuredBuffer(gpuParticleGroup->counterUavIndex, gpuParticleGroup->counterResource.Get(), 1, sizeof(int32_t));
 }
 
+void ParticleManager::CreateGPUFreeListResource()
+{
+	gpuParticleGroup->listIndexResource = DirectXCommon::GetInstance()->CreateUAVResource(DirectXCommon::GetInstance()->GetDevice(), sizeof(int32_t)*kGPUMAX_);
+
+	gpuParticleGroup->listIndexUavIndex = SrvManager::GetInstance()->Allocate();
+	gpuParticleGroup->listIndexUavHandle.first = SrvManager::GetInstance()->GetCPUDescriptorHandle(gpuParticleGroup->listIndexUavIndex);
+	gpuParticleGroup->listIndexUavHandle.second = SrvManager::GetInstance()->GetGPUDescriptorHandle(gpuParticleGroup->listIndexUavIndex);
+	SrvManager::GetInstance()->CreateUAVforStructuredBuffer(gpuParticleGroup->listIndexUavIndex, gpuParticleGroup->listIndexResource.Get(), kGPUMAX_, sizeof(int32_t));
+
+	gpuParticleGroup->listResource = DirectXCommon::GetInstance()->CreateUAVResource(DirectXCommon::GetInstance()->GetDevice(), sizeof(uint32_t) * kGPUMAX_);
+
+	gpuParticleGroup->listUavIndex = SrvManager::GetInstance()->Allocate();
+	gpuParticleGroup->listUavHandle.first = SrvManager::GetInstance()->GetCPUDescriptorHandle(gpuParticleGroup->listUavIndex);
+	gpuParticleGroup->listUavHandle.second = SrvManager::GetInstance()->GetGPUDescriptorHandle(gpuParticleGroup->listUavIndex);
+	SrvManager::GetInstance()->CreateUAVforStructuredBuffer(gpuParticleGroup->listUavIndex, gpuParticleGroup->listResource.Get(), kGPUMAX_, sizeof(uint32_t));
+}
+
 void ParticleManager::DrawGPU()
 {
 	// コマンドリストの取得
@@ -209,7 +226,9 @@ void ParticleManager::DrawGPU()
 		commandList->SetComputeRootSignature(GraphicsPipelineState::GetInstance()->GetRootSignatureCSParticle());
 		commandList->SetPipelineState(GraphicsPipelineState::GetInstance()->GetPipelineStateCSParticle());
 		commandList->SetComputeRootDescriptorTable(0, gpuParticleGroup->particleUavHandle.second);
-		commandList->SetComputeRootDescriptorTable(1, gpuParticleGroup->counterUavHandle.second);
+		//commandList->SetComputeRootDescriptorTable(1, gpuParticleGroup->counterUavHandle.second);
+		commandList->SetComputeRootDescriptorTable(1, gpuParticleGroup->listIndexUavHandle.second);
+		commandList->SetComputeRootDescriptorTable(2, gpuParticleGroup->listUavHandle.second);
 		commandList->Dispatch(1, 1, 1);
 		init = false;
 	}
@@ -219,7 +238,9 @@ void ParticleManager::DrawGPU()
 	commandList->SetComputeRootDescriptorTable(0, gpuParticleGroup->particleUavHandle.second);
 	commandList->SetComputeRootConstantBufferView(1, gpuParticleGroup->emitResource.Get()->GetGPUVirtualAddress());
 	commandList->SetComputeRootConstantBufferView(2, gpuParticleGroup->frameResource.Get()->GetGPUVirtualAddress());
-	commandList->SetComputeRootDescriptorTable(3, gpuParticleGroup->counterUavHandle.second);
+	//commandList->SetComputeRootDescriptorTable(3, gpuParticleGroup->counterUavHandle.second);
+	commandList->SetComputeRootDescriptorTable(3, gpuParticleGroup->listIndexUavHandle.second);
+	commandList->SetComputeRootDescriptorTable(4, gpuParticleGroup->listUavHandle.second);
 	commandList->Dispatch(1, 1, 1);
 
 	/*EmitとUpdateの並列を阻止*/
@@ -240,6 +261,8 @@ void ParticleManager::DrawGPU()
 	commandList->SetPipelineState(GraphicsPipelineState::GetInstance()->GetPipelineStateCSUpdate());
 	commandList->SetComputeRootDescriptorTable(0, gpuParticleGroup->particleUavHandle.second);
 	commandList->SetComputeRootConstantBufferView(1, gpuParticleGroup->frameResource.Get()->GetGPUVirtualAddress());
+	commandList->SetComputeRootDescriptorTable(2, gpuParticleGroup->listIndexUavHandle.second);
+	commandList->SetComputeRootDescriptorTable(3, gpuParticleGroup->listUavHandle.second);
 	commandList->Dispatch(1, 1, 1);
 
 	// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけばいい

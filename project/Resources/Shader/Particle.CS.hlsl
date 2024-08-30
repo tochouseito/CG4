@@ -1,21 +1,20 @@
 #include"Particle.hlsli"
-static const uint32_t kMaxParticles = 1024;
+static const uint kMaxParticles = 1024;
 RWStructuredBuffer<GPUParticle> gParticles : register(u0);
-RWStructuredBuffer<int32_t> gFreeCounter : register(u1);
+//RWStructuredBuffer<int32_t> gFreeCounter : register(u1);
+RWStructuredBuffer<int> gFreeListIndex : register(u1);
+RWStructuredBuffer<uint> gFreeList : register(u2);
 [numthreads(1024, 1, 1)]
-void main( uint32_t3 DTid : SV_DispatchThreadID )
+void main( uint3 DTid : SV_DispatchThreadID )
 {
-    uint32_t particleIndex = DTid.x;
+    uint particleIndex = DTid.x;
     if (particleIndex == 0)
     {
-        gFreeCounter[0] = 0;
+        //gFreeCounter[0] = 0;
+        gFreeListIndex[0] = kMaxParticles - 1;
     }
-        if (particleIndex < kMaxParticles)
-        {
-        // 全要素0で初期化
-        //gParticles[particleIndex] = (GPUParticle) 0;
-        //gParticles[particleIndex].scale = float32_t3(0.5f, 0.5f, 0.5f);
-        //gParticles[particleIndex].color = float32_t4(1.0f, 1.0f, 1.0f, 1.0f);
-
-        }
+    if (particleIndex < kMaxParticles)
+    {
+        gFreeList[particleIndex] = particleIndex;
+    }
 }
