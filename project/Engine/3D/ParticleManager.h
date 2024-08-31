@@ -53,6 +53,7 @@ public:/*パーティクルの要素構造体*/
 		Vector3 velocity;
 		float currentTime;
 		Color color;
+		int isAlive;
 	};
 	struct EmitterSphere {
 		Vector3 translate;// 位置

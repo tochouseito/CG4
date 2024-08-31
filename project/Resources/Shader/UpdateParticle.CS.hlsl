@@ -18,13 +18,14 @@ void main( uint3 DTid : SV_DispatchThreadID )
             gParticles[particleIndex].currentTime += gPerFrame.deltaTime;
             float alpha = 1.0f - (gParticles[particleIndex].currentTime / gParticles[particleIndex].lifeTime);
             gParticles[particleIndex].color.a = saturate(alpha);
-
         }
         // alphaが0になったのでここはフリーとする
+        //if (gParticles[particleIndex].isAlive && gParticles[particleIndex].color.a <= 0.0f)
         if (gParticles[particleIndex].color.a <= 0.0f)
         {
             // スケールに0を入れておいてVertexShader出力で棄却されるようにする
             gParticles[particleIndex].scale = float3(0.0f, 0.0f, 0.0f);
+            gParticles[particleIndex].isAlive = false;
             int freeListIndex;
             InterlockedAdd(gFreeListIndex[0], 1, freeListIndex);
             // 最新のfreeListIndexの場所に死んだParticleのIndexを設定する

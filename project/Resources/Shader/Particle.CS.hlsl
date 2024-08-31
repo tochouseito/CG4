@@ -9,14 +9,14 @@ void main( uint3 DTid : SV_DispatchThreadID )
 {
     // 初期化処理
     uint particleIndex = DTid.x;
+    
     if (particleIndex < kMaxParticles)
     {
-        
+        gParticles[particleIndex] = (GPUParticle) 0;
         gFreeList[particleIndex] = particleIndex;
     }
     if (particleIndex == 0)
     {
-        //gFreeCounter[0] = 0;
         gFreeListIndex[0] = kMaxParticles - 1;
     }
 }

@@ -7,13 +7,14 @@ struct VertexShaderOutput
 };
 struct GPUParticle
 {
-    float32_t3 translate;
-    float32_t3 rotate;
-    float32_t3 scale;
-    float32_t lifeTime;
-    float32_t3 velocity;
-    float32_t currentTime;
-    float32_t4 color;
+    float3 translate;
+    float3 rotate;
+    float3 scale;
+    float lifeTime;
+    float3 velocity;
+    float currentTime;
+    float4 color;
+    int isAlive;
 };
 struct PerView
 {

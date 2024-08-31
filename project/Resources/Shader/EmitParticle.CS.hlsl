@@ -47,6 +47,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
                 gParticles[particleIndex].color.a = 1.0f;
                 gParticles[particleIndex].velocity = generator.Generate3d();
                 gParticles[particleIndex].lifeTime = 2.0f;
+                gParticles[particleIndex].isAlive = true;
             }else{
               // 発生させられなかったので、減らしてしまった分元に戻す。これを忘れると発生させられなかった分だけIndexが減ってしまう
                 InterlockedAdd(gFreeListIndex[0], 1);
