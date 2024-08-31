@@ -52,7 +52,6 @@ void main( uint3 DTid : SV_DispatchThreadID )
                 InterlockedAdd(gFreeListIndex[0], 1);
                 // Emit中にParticleは消えないので、この後発生することはないためBreakして終わらせる
                 break;
-
             }
             //    InterlockedAdd(gFreeCounter[0], 1, particleIndex); // gFreeCounter[0]に1を足し、足す前の値をparticleIndexに格納する
             //    // 最大数よりもparticleの数が少なければ射出可能

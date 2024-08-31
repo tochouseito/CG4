@@ -202,12 +202,12 @@ void ParticleManager::CreateGPUCounterResource()
 
 void ParticleManager::CreateGPUFreeListResource()
 {
-	gpuParticleGroup->listIndexResource = DirectXCommon::GetInstance()->CreateUAVResource(DirectXCommon::GetInstance()->GetDevice(), sizeof(int32_t)*kGPUMAX_);
+	gpuParticleGroup->listIndexResource = DirectXCommon::GetInstance()->CreateUAVResource(DirectXCommon::GetInstance()->GetDevice(), sizeof(int32_t));
 
 	gpuParticleGroup->listIndexUavIndex = SrvManager::GetInstance()->Allocate();
 	gpuParticleGroup->listIndexUavHandle.first = SrvManager::GetInstance()->GetCPUDescriptorHandle(gpuParticleGroup->listIndexUavIndex);
 	gpuParticleGroup->listIndexUavHandle.second = SrvManager::GetInstance()->GetGPUDescriptorHandle(gpuParticleGroup->listIndexUavIndex);
-	SrvManager::GetInstance()->CreateUAVforStructuredBuffer(gpuParticleGroup->listIndexUavIndex, gpuParticleGroup->listIndexResource.Get(), kGPUMAX_, sizeof(int32_t));
+	SrvManager::GetInstance()->CreateUAVforStructuredBuffer(gpuParticleGroup->listIndexUavIndex, gpuParticleGroup->listIndexResource.Get(), 1, sizeof(int32_t));
 
 	gpuParticleGroup->listResource = DirectXCommon::GetInstance()->CreateUAVResource(DirectXCommon::GetInstance()->GetDevice(), sizeof(uint32_t) * kGPUMAX_);
 
@@ -255,6 +255,18 @@ void ParticleManager::DrawGPU()
 	barrier2.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 	barrier2.UAV.pResource = gpuParticleGroup->counterResource.Get();
 	commandList->ResourceBarrier(1, &barrier2);
+
+	D3D12_RESOURCE_BARRIER barrier3{};
+	barrier3.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+	barrier3.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier3.UAV.pResource = gpuParticleGroup->listIndexResource.Get();
+	commandList->ResourceBarrier(1, &barrier3);
+
+	D3D12_RESOURCE_BARRIER barrier4{};
+	barrier4.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+	barrier4.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier4.UAV.pResource = gpuParticleGroup->listResource.Get();
+	commandList->ResourceBarrier(1, &barrier4);
 
 	/*Update*/
 	commandList->SetComputeRootSignature(GraphicsPipelineState::GetInstance()->GetRootSignatureCSUpdate());

@@ -21,7 +21,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 
         }
         // alphaが0になったのでここはフリーとする
-        if (gParticles[particleIndex].color.a == 0)
+        if (gParticles[particleIndex].color.a <= 0.0f)
         {
             // スケールに0を入れておいてVertexShader出力で棄却されるようにする
             gParticles[particleIndex].scale = float3(0.0f, 0.0f, 0.0f);
