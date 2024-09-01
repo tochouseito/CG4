@@ -15,8 +15,11 @@ void main( uint3 DTid : SV_DispatchThreadID )
         gParticles[particleIndex] = (GPUParticle) 0;
         gFreeList[particleIndex] = particleIndex;
     }
+    // 最初に末尾を入れる
     if (particleIndex == 0)
     {
         gFreeListIndex[0] = kMaxParticles - 1;
     }
+    // 他のスレッドが処理を行う前にすべてのスレッドを同期
+    //GroupMemoryBarrierWithGroupSync();
 }

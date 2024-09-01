@@ -41,14 +41,23 @@ void main( uint3 DTid : SV_DispatchThreadID )
             if (0 <= freeListIndex && freeListIndex < kMaxParticles)
             {
                 uint particleIndex = gFreeList[freeListIndex];
+                
+                
                 gParticles[particleIndex].scale = float3(1.5f, 1.5f, 1.5f);
                 gParticles[particleIndex].translate = generator.Generate3d();
                 gParticles[particleIndex].color.rgb = generator.Generate3d();
                 gParticles[particleIndex].color.a = 1.0f;
                 gParticles[particleIndex].velocity = generator.Generate3d();
                 gParticles[particleIndex].lifeTime = 2.0f;
+                gParticles[particleIndex].currentTime = 0.0f;
                 gParticles[particleIndex].isAlive = true;
-            }else{
+                
+               
+                
+                
+            }
+            else
+            {
               // 発生させられなかったので、減らしてしまった分元に戻す。これを忘れると発生させられなかった分だけIndexが減ってしまう
                 InterlockedAdd(gFreeListIndex[0], 1);
                 // Emit中にParticleは消えないので、この後発生することはないためBreakして終わらせる

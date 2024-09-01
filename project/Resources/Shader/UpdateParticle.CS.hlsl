@@ -20,23 +20,24 @@ void main( uint3 DTid : SV_DispatchThreadID )
             gParticles[particleIndex].color.a = saturate(alpha);
         }
         // alphaが0になったのでここはフリーとする
-        //if (gParticles[particleIndex].isAlive && gParticles[particleIndex].color.a <= 0.0f)
-        if (gParticles[particleIndex].color.a <= 0.0f)
+        if (gParticles[particleIndex].isAlive && gParticles[particleIndex].color.a <= 0.0f)
+        //if (gParticles[particleIndex].color.a <= 0.0f)
         {
             // スケールに0を入れておいてVertexShader出力で棄却されるようにする
             gParticles[particleIndex].scale = float3(0.0f, 0.0f, 0.0f);
             gParticles[particleIndex].isAlive = false;
+            //gParticles[particleIndex].color.a = 1.0f;
             int freeListIndex;
             InterlockedAdd(gFreeListIndex[0], 1, freeListIndex);
             // 最新のfreeListIndexの場所に死んだParticleのIndexを設定する
             if ((freeListIndex + 1) < kMaxParticles)
             {
-                gFreeList[freeListIndex + 1] = particleIndex;
+                gFreeList[freeListIndex+1] = particleIndex;
             }
             else
             {
                // ここに来るはずがない、来たら何かが間違っているが、安全策をうつ
-                InterlockedAdd(gFreeListIndex[0], -1, freeListIndex);
+               InterlockedAdd(gFreeListIndex[0], -1, freeListIndex);
 
             }
 

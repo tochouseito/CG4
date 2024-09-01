@@ -232,6 +232,29 @@ void ParticleManager::DrawGPU()
 		commandList->Dispatch(1, 1, 1);
 		init = false;
 	}
+	/*D3D12_RESOURCE_BARRIER barrier5{};
+	barrier5.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+	barrier5.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier5.UAV.pResource = gpuParticleGroup->particleResource.Get();
+	commandList->ResourceBarrier(1, &barrier5);
+
+	D3D12_RESOURCE_BARRIER barrier6{};
+	barrier6.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+	barrier6.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier6.UAV.pResource = gpuParticleGroup->counterResource.Get();
+	commandList->ResourceBarrier(1, &barrier6);
+
+	D3D12_RESOURCE_BARRIER barrier7{};
+	barrier7.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+	barrier7.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier7.UAV.pResource = gpuParticleGroup->listIndexResource.Get();
+	commandList->ResourceBarrier(1, &barrier7);
+
+	D3D12_RESOURCE_BARRIER barrier8{};
+	barrier8.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+	barrier8.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier8.UAV.pResource = gpuParticleGroup->listResource.Get();
+	commandList->ResourceBarrier(1, &barrier8);*/
 	/*Emit*/
 	commandList->SetComputeRootSignature(GraphicsPipelineState::GetInstance()->GetRootSignatureCSEmit());
 	commandList->SetPipelineState(GraphicsPipelineState::GetInstance()->GetPipelineStateCSEmit());
