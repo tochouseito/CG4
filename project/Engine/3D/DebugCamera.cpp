@@ -32,8 +32,8 @@ void DebugCamera::Update()
 	Matrix4x4 scaleMatrix = MakeScaleMatrix(Vector3(1.0f, 1.0f, 1.0f));
 	Matrix4x4 rotateXYZMatrix = matRot_;
 	Matrix4x4 translateMatrix = MakeTranslateMatrix(offset);
-	Matrix4x4 cameraMatrix = Multiply(scaleMatrix, Multiply(rotateXYZMatrix, translateMatrix));
-	//Matrix4x4 cameraMatrix = Multiply(translateMatrix, Multiply(rotateXYZMatrix, scaleMatrix));
+	//Matrix4x4 cameraMatrix2 = Multiply(scaleMatrix, Multiply(rotateXYZMatrix, translateMatrix));
+	Matrix4x4 cameraMatrix = Multiply(Multiply(scaleMatrix, rotateXYZMatrix), translateMatrix);
 	viewProjection_->cameraMatrix_ = cameraMatrix;
 	viewProjection_->viewMatrix_ = Inverse(cameraMatrix);
 	viewProjection_->projectionMatrix_ = MakePerspectiveFovMatrix(0.45f,
@@ -91,8 +91,8 @@ void DebugCamera::CameraMove(Vector3& cameraRotate, Vector3& cameraTranslate, Ve
 			float deltaX = static_cast<float>(currentMousePos.x - clickPosition.x);
 			float deltaY = static_cast<float>(currentMousePos.y - clickPosition.y);
 
-			cameraRotate.x -= (deltaY * mouseSensitivity);// / 5.0f;
-			cameraRotate.y += (deltaX * mouseSensitivity); /// 5.0f;
+			cameraRotate.x += (deltaY * mouseSensitivity); // 5.0f;
+			cameraRotate.y += (deltaX * mouseSensitivity); // 5.0f;
 
 
 			// 現在のマウス位置を保存する

@@ -81,8 +81,8 @@ Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
 	return result;
 }
 // １．平行移動行列
-Matrix4x4 MakeTranslateMatrix(const Vector3& translate) {
-	Matrix4x4 result;
+Matrix4x4 MakeTranslateMatrix(const Vector3& translation) {
+	/*Matrix4x4 result;
 	result.m[0][0] = 1.0f;
 	result.m[1][0] = 0.0f;
 	result.m[2][0] = 0.0f;
@@ -99,11 +99,18 @@ Matrix4x4 MakeTranslateMatrix(const Vector3& translate) {
 	result.m[1][3] = 0.0f;
 	result.m[2][3] = 0.0f;
 	result.m[3][3] = 1.0f;
-	return result;
+	return result;*/
+	Matrix4x4 translationMatrix = {
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		translation.x,translation.y, translation.z, 1.0f
+	};
+	return translationMatrix;
 }
 // ２．拡大縮小行列
 Matrix4x4 MakeScaleMatrix(const Vector3& scale) {
-	Matrix4x4 result;
+	/*Matrix4x4 result;
 	result.m[0][0] = scale.x;
 	result.m[1][0] = 0.0f;
 	result.m[2][0] = 0.0f;
@@ -120,7 +127,14 @@ Matrix4x4 MakeScaleMatrix(const Vector3& scale) {
 	result.m[1][3] = 0.0f;
 	result.m[2][3] = 0.0f;
 	result.m[3][3] = 1.0f;
-	return result;
+	return result;*/
+	Matrix4x4 scaleMatrix = {
+		scale.x, 0.0f,    0.0f,    0.0f,
+		0.0f,    scale.y, 0.0f,    0.0f,
+		0.0f,    0.0f,    scale.z, 0.0f,
+		0.0f,    0.0f,    0.0f,    1.0f
+	};
+	return scaleMatrix;
 }
 // ３．座標変換
 Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix) {
@@ -137,7 +151,7 @@ Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix) {
 }
 // ４．X軸回転行列
 Matrix4x4 MakeRotateXMatrix(float radian) {
-	Matrix4x4 result;
+	/*Matrix4x4 result;
 	result.m[0][0] = 1.0f;
 	result.m[1][0] = 0.0f;
 	result.m[2][0] = 0.0f;
@@ -154,11 +168,20 @@ Matrix4x4 MakeRotateXMatrix(float radian) {
 	result.m[1][3] = 0.0f;
 	result.m[2][3] = 0.0f;
 	result.m[3][3] = 1.0f;
+	return result;*/
+	float cosX = cosf(radian);
+	float sinX = sinf(radian);
+	Matrix4x4 result = {
+		1.0f, 0.0f,  0.0f,   0.0f,
+		0.0f, cosX,  sinX,   0.0f,
+		0.0f, -sinX, cosX,   0.0f,
+		0.0f, 0.0f,  0.0f,   1.0f
+	};
 	return result;
 }
 // ５．Y軸回転行列
 Matrix4x4 MakeRotateYMatrix(float radian) {
-	Matrix4x4 result;
+	/*Matrix4x4 result;
 	result.m[0][0] = std::cosf(radian);
 	result.m[1][0] = 0.0f;
 	result.m[2][0] = std::sinf(radian);
@@ -175,11 +198,20 @@ Matrix4x4 MakeRotateYMatrix(float radian) {
 	result.m[1][3] = 0.0f;
 	result.m[2][3] = 0.0f;
 	result.m[3][3] = 1.0f;
+	return result;*/
+	float cosY = cosf(radian);
+	float sinY = sinf(radian);
+	Matrix4x4 result = {
+		cosY,  0.0f, -sinY,  0.0f,
+		0.0f,  1.0f, 0.0f,   0.0f,
+		sinY,  0.0f, cosY,   0.0f,
+		0.0f,  0.0f, 0.0f,   1.0f
+	};
 	return result;
 }
 // ６．Z軸回転行列
 Matrix4x4 MakeRotateZMatrix(float radian) {
-	Matrix4x4 result;
+	/*Matrix4x4 result;
 	result.m[0][0] = std::cosf(radian);
 	result.m[1][0] = -std::sinf(radian);
 	result.m[2][0] = 0.0f;
@@ -196,6 +228,15 @@ Matrix4x4 MakeRotateZMatrix(float radian) {
 	result.m[1][3] = 0.0f;
 	result.m[2][3] = 0.0f;
 	result.m[3][3] = 1.0f;
+	return result;*/
+	float cosZ = cosf(radian);
+	float sinZ = sinf(radian);
+	Matrix4x4 result = {
+		cosZ,  sinZ,  0.0f,  0.0f,
+		-sinZ, cosZ,  0.0f,  0.0f,
+		0.0f,  0.0f,  1.0f,  0.0f,
+		0.0f,  0.0f,  0.0f,  1.0f
+	};
 	return result;
 }
 Matrix4x4 MakeRotateXYZMatrix(Vector3& rotate)
@@ -218,6 +259,7 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Ve
 	//result = Multiply(rotateXYZMatrix, Multiply(scaleMatrix, translateMatrix));
 	result = Multiply(scaleMatrix, Multiply(rotateXYZMatrix, translateMatrix));
 	//result = Multiply(translateMatrix, Multiply(scaleMatrix, rotateXYZMatrix));
+	result = Multiply(Multiply(scaleMatrix, rotateXYZMatrix), translateMatrix);
 	return result;
 }
 // 3次元アフィン変換行列

@@ -89,11 +89,6 @@ void GameScene::Initialize() {
 	primitive_ = new Primitive();
 	primitive_->Initialize(textureHandle_[0],&viewProjection_);
 
-	serial = new SerialToArduino();
-	
-	if (!serial->InitializeSerialPort("COM3")) {  // L"\\\\.\\COM3" はワイド文字列リテラルです
-		Vector3();
-	}
 	///*パーティクルマネージャの生成*/
 	particleManager_ = std::make_unique<ParticleManager>();
 	particleManager_->Initialize(&viewProjection_,textureHandle_[1]);
@@ -186,8 +181,7 @@ void GameScene::Update() {
 	if (useDebugCamera_) {
 		debugCamera_->Update();
 		viewProjection_.TransferMatrix();
-	} else
-	{
+	} else{
 		// メインカメラの処理
 		mainCamera_->Update();
 		viewProjection_.UpdateMatrix();
