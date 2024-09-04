@@ -105,10 +105,6 @@ void GameScene::Initialize() {
 	debugCamera_ = std::make_unique<DebugCamera>();
 	debugCamera_->Initialize(Vector3(0.0f, 0.0f, -30.0f) ,&viewProjection_);
 
-	bunnyModel_ = Model::LordModel("bunny.obj");
-	bunny_ = new BunnyModel();
-	bunny_->Initialize(bunnyModel_, textureHandle_[0], &viewProjection_);
-
 	multiMaterialModel_ = Model::LordModel("multiMaterial.obj");
 	multiMaterial_ = new multiMaterialModel();
 	multiMaterial_->Initialize(multiMaterialModel_, textureHandle_[0], &viewProjection_);
@@ -165,7 +161,6 @@ void GameScene::Update() {
 	/*パーティクルマネージャの更新*/
 	particleManager_->Update();
 	//emitterManager_->Update();
-	bunny_->Updata();
 	multiMaterial_->Updata();
 	multiMesh_->Updata();
 	suzanne_->Updata();
@@ -199,7 +194,6 @@ void GameScene::Draw() {
 	particleManager_->DrawGPU();
 	//emitterManager_->Draw();
 	//sprite_->Draw();
-	bunny_->Draw();
 	multiMaterial_->Draw();
 	multiMesh_->Draw();
 	suzanne_->Draw();

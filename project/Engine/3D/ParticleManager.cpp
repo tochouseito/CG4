@@ -170,8 +170,8 @@ void ParticleManager::CreateGPUParticleResource()
 	gpuParticleGroup->particleSrvHandle.second = SrvManager::GetInstance()->GetGPUDescriptorHandle(gpuParticleGroup->srvIndex);
 	gpuParticleGroup->particleUavHandle.first = SrvManager::GetInstance()->GetCPUDescriptorHandle(gpuParticleGroup->uavIndex);
 	gpuParticleGroup->particleUavHandle.second = SrvManager::GetInstance()->GetGPUDescriptorHandle(gpuParticleGroup->uavIndex);
-	SrvManager::GetInstance()->CreateUAVforStructuredBuffer(gpuParticleGroup->uavIndex, gpuParticleGroup->particleResource.Get(), 1024, sizeof(GPUParticle));
-	SrvManager::GetInstance()->CreateSRVforStructuredBuffer(gpuParticleGroup->srvIndex, gpuParticleGroup->particleResource.Get(), 1024, sizeof(GPUParticle));
+	SrvManager::GetInstance()->CreateUAVforStructuredBuffer(gpuParticleGroup->uavIndex, gpuParticleGroup->particleResource.Get(), kGPUMAX_, sizeof(GPUParticle));
+	SrvManager::GetInstance()->CreateSRVforStructuredBuffer(gpuParticleGroup->srvIndex, gpuParticleGroup->particleResource.Get(), kGPUMAX_, sizeof(GPUParticle));
 }
 
 void ParticleManager::CreateGPUEmitResource()
