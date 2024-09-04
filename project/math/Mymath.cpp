@@ -78,7 +78,6 @@ Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
 			}
 		}
 	}
-
 	return result;
 }
 // １．平行移動行列
@@ -145,10 +144,10 @@ Matrix4x4 MakeRotateXMatrix(float radian) {
 	result.m[3][0] = 0.0f;
 	result.m[0][1] = 0.0f;
 	result.m[1][1] = std::cosf(radian);
-	result.m[2][1] = std::sinf(radian);
+	result.m[2][1] = -std::sinf(radian);
 	result.m[3][1] = 0.0f;
 	result.m[0][2] = 0.0f;
-	result.m[1][2] = -std::sinf(radian);
+	result.m[1][2] = std::sinf(radian);
 	result.m[2][2] = std::cosf(radian);
 	result.m[3][2] = 0.0f;
 	result.m[0][3] = 0.0f;
@@ -229,6 +228,7 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Quaternion& rotate, const
 	Matrix4x4 translateMatrix = MakeTranslateMatrix(translate);
 	//result = Multiply(rotateXYZMatrix, Multiply(scaleMatrix, translateMatrix));
 	result = Multiply(scaleMatrix, Multiply(rotateMatrix, translateMatrix));
+	//result = Multiply(translateMatrix, Multiply(scaleMatrix, rotateMatrix));
 	return result;
 }
 // 透視投影行列

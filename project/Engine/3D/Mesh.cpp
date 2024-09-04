@@ -12,14 +12,14 @@ void Mesh::CreateDateResource(size_t vertices, const std::string& name)
 	meshData_[name].srvIndex = SrvManager::GetInstance()->Allocate();
 	meshData_[name].inputVertexSrvHandle.first = SrvManager::GetInstance()->GetCPUDescriptorHandle(meshData_[name].srvIndex);
 	meshData_[name].inputVertexSrvHandle.second = SrvManager::GetInstance()->GetGPUDescriptorHandle(meshData_[name].srvIndex);
-	SrvManager::GetInstance()->CreateSRVforStructuredBuffer(meshData_[name].srvIndex, meshData_[name].vertexResource.Get(), static_cast<UINT>(meshData_.size()), sizeof(VertexData) * vertices);
+	SrvManager::GetInstance()->CreateSRVforStructuredBuffer(meshData_[name].srvIndex, meshData_[name].vertexResource.Get(), 1, sizeof(VertexData) * vertices);
 
 	meshData_[name].outputResource = DirectXCommon::GetInstance()->CreateUAVResource(DirectXCommon::GetInstance()->GetDevice(), sizeof(VertexData) * vertices);
 
 	meshData_[name].outputsrvIndex = SrvManager::GetInstance()->Allocate();
 	meshData_[name].outputVertexSrvHandle.first = SrvManager::GetInstance()->GetCPUDescriptorHandle(meshData_[name].outputsrvIndex);
 	meshData_[name].outputVertexSrvHandle.second = SrvManager::GetInstance()->GetGPUDescriptorHandle(meshData_[name].outputsrvIndex);
-	SrvManager::GetInstance()->CreateUAVforStructuredBuffer(meshData_[name].outputsrvIndex, meshData_[name].outputResource.Get(), static_cast<UINT>(meshData_.size()), sizeof(VertexData) * vertices);
+	SrvManager::GetInstance()->CreateUAVforStructuredBuffer(meshData_[name].outputsrvIndex, meshData_[name].outputResource.Get(), 1, sizeof(VertexData) * vertices);
 
 	// 頂点バッファビューを作成する
 	// リソースの先頭のアドレスから使う

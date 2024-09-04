@@ -13,6 +13,7 @@ void MainCamera::Initialize(const Vector3& position, ViewProjection* viewProject
 	viewProjection_ = viewProjection;
 	translation_ = position;
 	rotation_.y = 3.14f;
+	//rotation_.y = 2.0f;
 	//viewProjection_->rotation_.y = 0.0f;
 	//viewProjection_->TransferMatrix();
 }

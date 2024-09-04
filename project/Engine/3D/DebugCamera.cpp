@@ -28,6 +28,7 @@ void DebugCamera::Update()
 	//matRot_ = MakeRotateXYZMatrix(rotation_);
 	matRot_ = Multiply(matRotDelta, matRot_);
 	offset = TransformNormal(offset, matRot_);
+	//translation_ = offset;
 	Matrix4x4 scaleMatrix = MakeScaleMatrix(Vector3(1.0f, 1.0f, 1.0f));
 	Matrix4x4 rotateXYZMatrix = matRot_;
 	Matrix4x4 translateMatrix = MakeTranslateMatrix(offset);
