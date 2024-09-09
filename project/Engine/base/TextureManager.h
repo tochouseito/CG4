@@ -34,7 +34,7 @@ public:
 		CD3DX12_CPU_DESCRIPTOR_HANDLE cpuDescHandleSRV;
 		// シェーダリソースビューのハンドル(CPU)
 		CD3DX12_GPU_DESCRIPTOR_HANDLE gpuDescHandleSRV;
-	};
+	}; 
 	
 
 	Microsoft::WRL::ComPtr < ID3D12Resource> GetTextureResource(uint32_t handleNum)const { return textureResource_[handleNum]; }
