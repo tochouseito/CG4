@@ -23,7 +23,9 @@ void WorldTransform::CreateConstBufferResource(uint32_t Instance) {
 	}
 	kNumMaxInstance_ = Instance;
 	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
-	worldResource_ = DirectXCommon::GetInstance()->CreateBufferResource(DirectXCommon::GetInstance()->GetDevice(), sizeof(ConstBufferDataWorldTransform)*Instance);
+	worldResource_ = DirectXCommon::GetInstance()->
+		CreateBufferResource(DirectXCommon::GetInstance()->GetDevice()
+			, sizeof(ConstBufferDataWorldTransform)*Instance);
 	// 書き込むためのアドレスを取得
 	worldResource_->Map(0, nullptr, reinterpret_cast<void**>(&worldData_));
 	// 単位行列を書き込んでいく
