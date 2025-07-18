@@ -24,7 +24,7 @@ struct VertexShaderInput
 };
 VertexShaderOutput main(VertexShaderInput input, uint32_t instanceId : SV_InstanceID)
 {
-    VertexShaderInput output;
+    VertexShaderOutput output;
     float4x4 WVP = mul(gWVP.View, gWVP.Projection);
     output.position = mul(input.position, mul(gWorld[instanceId].World, WVP));
     output.texcoord = input.texcoord;
