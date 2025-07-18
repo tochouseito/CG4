@@ -2,11 +2,24 @@
 #include"Mymath.h"
 #include"DirectXCommon.h"
 #include"Model.h"
+#include"SrvManager.h"
 Mesh::Mesh() {
 }
 void Mesh::CreateDateResource(size_t vertices, const std::string& name)
 {
 	meshData_[name].vertexResource = DirectXCommon::GetInstance()->CreateBufferResource(DirectXCommon::GetInstance()->GetDevice(), sizeof(VertexData) * vertices);
+
+	meshData_[name].srvIndex = SrvManager::GetInstance()->Allocate();
+	meshData_[name].inputVertexSrvHandle.first = SrvManager::GetInstance()->GetCPUDescriptorHandle(meshData_[name].srvIndex);
+	meshData_[name].inputVertexSrvHandle.second = SrvManager::GetInstance()->GetGPUDescriptorHandle(meshData_[name].srvIndex);
+	SrvManager::GetInstance()->CreateSRVforStructuredBuffer(meshData_[name].srvIndex, meshData_[name].vertexResource.Get(), static_cast<UINT>(meshData_.size()), sizeof(VertexData) * vertices);
+
+	meshData_[name].outputResource = DirectXCommon::GetInstance()->CreateUAVResource(DirectXCommon::GetInstance()->GetDevice(), sizeof(VertexData) * vertices);
+
+	meshData_[name].outputsrvIndex = SrvManager::GetInstance()->Allocate();
+	meshData_[name].outputVertexSrvHandle.first = SrvManager::GetInstance()->GetCPUDescriptorHandle(meshData_[name].outputsrvIndex);
+	meshData_[name].outputVertexSrvHandle.second = SrvManager::GetInstance()->GetGPUDescriptorHandle(meshData_[name].outputsrvIndex);
+	SrvManager::GetInstance()->CreateUAVforStructuredBuffer(meshData_[name].outputsrvIndex, meshData_[name].outputResource.Get(), static_cast<UINT>(meshData_.size()), sizeof(VertexData) * vertices);
 
 	// 頂点バッファビューを作成する
 	// リソースの先頭のアドレスから使う
@@ -19,6 +32,18 @@ void Mesh::CreateDateResource(size_t vertices, const std::string& name)
 	// 頂点リソースにデータを書き込む
 	// 書き込むためのアドレスを取得
 	meshData_[name].vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&meshData_[name].vertexData));
+
+	// 頂点バッファビューを作成する
+	// リソースの先頭のアドレスから使う
+	meshData_[name].outputVertexBufferView.BufferLocation = meshData_[name].outputResource->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点のサイズ
+	meshData_[name].outputVertexBufferView.SizeInBytes = sizeof(VertexData) * static_cast<UINT>(vertices);
+	// 1頂点アタリのサイズ
+	meshData_[name].outputVertexBufferView.StrideInBytes = sizeof(VertexData);
+
+	// 頂点リソースにデータを書き込む
+	// 書き込むためのアドレスを取得
+	//meshData_[name].outputResource->Map(0, nullptr, reinterpret_cast<void**>(&meshData_[name].outputData));
 }
 void Mesh::CreateBall(uint32_t Subdivision) {
 	kSubdivision_ = Subdivision;   // 分割数
@@ -223,6 +248,98 @@ void Mesh::CreateObjectVertex(Object Object) {
 		CreateVertexResource(vertices_);
 		break;
 	}
+}
+
+void Mesh::CreateModelIndexResource(size_t indices, const std::string& name)
+{
+	meshData_[name].indexResource = DirectXCommon::GetInstance()->CreateBufferResource(DirectXCommon::GetInstance()->GetDevice(), sizeof(uint32_t) * indices);
+	meshData_[name].indexBufferView.BufferLocation = meshData_[name].indexResource->GetGPUVirtualAddress();
+	meshData_[name].indexBufferView.SizeInBytes = sizeof(uint32_t) * indices;
+	meshData_[name].indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+	meshData_[name].indexResource->Map(0, nullptr, reinterpret_cast<void**>(&meshData_[name].indexData));
+}
+
+void Mesh::CreateSkyBoxVertexResource()
+{
+	vertexResource_ = DirectXCommon::GetInstance()->CreateBufferResource(DirectXCommon::GetInstance()->GetDevice(), sizeof(VertexData) *boxVertex_ );
+
+	// 頂点バッファビューを作成する
+	// リソースの先頭のアドレスから使う
+	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズは頂点のサイズ
+	vertexBufferView_.SizeInBytes = sizeof(VertexData) * static_cast<UINT>(boxVertex_);
+	// 1頂点アタリのサイズ
+	vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+	// 頂点リソースにデータを書き込む
+	// 書き込むためのアドレスを取得
+	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_));
+
+	/* 右面。描画インデックスは[0,1,2][2,1,3]で内側を向く */
+	vertexData_[0].position = { 1.0f,  1.0f,  1.0f, 1.0f };
+	vertexData_[1].position = { 1.0f,  1.0f, -1.0f, 1.0f };
+	vertexData_[2].position = { 1.0f, -1.0f,  1.0f, 1.0f };
+	vertexData_[3].position = { 1.0f, -1.0f, -1.0f, 1.0f };
+
+	/* 左面。描画インデックスは[4,5,6][6,5,7] */
+	vertexData_[4].position = { -1.0f,  1.0f, -1.0f, 1.0f };
+	vertexData_[5].position = { -1.0f,  1.0f,  1.0f, 1.0f };
+	vertexData_[6].position = { -1.0f, -1.0f, -1.0f, 1.0f };
+	vertexData_[7].position = { -1.0f, -1.0f,  1.0f, 1.0f };
+
+	/* 前面。描画インデックスは[8,9,10][10,9,11] */
+	vertexData_[8].position = { -1.0f,  1.0f,  1.0f, 1.0f };
+	vertexData_[9].position = { 1.0f,  1.0f,  1.0f, 1.0f };
+	vertexData_[10].position = { -1.0f, -1.0f,  1.0f, 1.0f };
+	vertexData_[11].position = { 1.0f, -1.0f,  1.0f, 1.0f };
+
+	/* 後面。描画インデックスは[12,13,14][14,13,15] */
+	vertexData_[12].position = { 1.0f,  1.0f, -1.0f, 1.0f };
+	vertexData_[13].position = { -1.0f,  1.0f, -1.0f, 1.0f };
+	vertexData_[14].position = { 1.0f, -1.0f, -1.0f, 1.0f };
+	vertexData_[15].position = { -1.0f, -1.0f, -1.0f, 1.0f };
+
+	/* 上面。描画インデックスは[16,17,18][18,17,19] */
+	vertexData_[16].position = { -1.0f,  1.0f, -1.0f, 1.0f };
+	vertexData_[17].position = { 1.0f,  1.0f, -1.0f, 1.0f };
+	vertexData_[18].position = { -1.0f,  1.0f,  1.0f, 1.0f };
+	vertexData_[19].position = { 1.0f,  1.0f,  1.0f, 1.0f };
+
+	/* 下面。描画インデックスは[20,21,22][22,21,23] */
+	vertexData_[20].position = { -1.0f, -1.0f,  1.0f, 1.0f };
+	vertexData_[21].position = { 1.0f, -1.0f,  1.0f, 1.0f };
+	vertexData_[22].position = { -1.0f, -1.0f, -1.0f, 1.0f };
+	vertexData_[23].position = { 1.0f, -1.0f, -1.0f, 1.0f };
+
+	indexResource_ = DirectXCommon::GetInstance()->CreateBufferResource(DirectXCommon::GetInstance()->GetDevice(), sizeof(uint32_t) * uint32_t(36));
+	indexBufferView_.BufferLocation = indexResource_->GetGPUVirtualAddress();
+	indexBufferView_.SizeInBytes = sizeof(uint32_t) * uint32_t(36);
+	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+	indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexData_));
+
+	// 右面インデックス
+	indexData_[0] = 0; indexData_[1] = 1; indexData_[2] = 2;
+	indexData_[3] = 2; indexData_[4] = 1; indexData_[5] = 3;
+
+	// 左面インデックス
+	indexData_[6] = 4; indexData_[7] = 5; indexData_[8] = 6;
+	indexData_[9] = 6; indexData_[10] = 5; indexData_[11] = 7;
+
+	// 前面インデックス
+	indexData_[12] = 8; indexData_[13] = 9; indexData_[14] = 10;
+	indexData_[15] = 10; indexData_[16] = 9; indexData_[17] = 11;
+
+	// 後面インデックス
+	indexData_[18] = 12; indexData_[19] = 13; indexData_[20] = 14;
+	indexData_[21] = 14; indexData_[22] = 13; indexData_[23] = 15;
+
+	// 上面インデックス
+	indexData_[24] = 16; indexData_[25] = 17; indexData_[26] = 18;
+	indexData_[27] = 18; indexData_[28] = 17; indexData_[29] = 19;
+
+	// 下面インデックス
+	indexData_[30] = 20; indexData_[31] = 21; indexData_[32] = 22;
+	indexData_[33] = 22; indexData_[34] = 21; indexData_[35] = 23;
 }
 
 void Mesh::CreateSpriteVertexResource(size_t vertices) {

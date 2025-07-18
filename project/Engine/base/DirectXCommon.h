@@ -153,6 +153,8 @@ public:// メンバ関数
 	/// <returns></returns>
 	Microsoft::WRL::ComPtr < ID3D12Resource> CreateBufferResource(ID3D12Device* device, const size_t& sizeInBytes);
 
+	Microsoft::WRL::ComPtr < ID3D12Resource> CreateUAVResource(ID3D12Device* device, const size_t& sizeInBytes);
+
 	/// <summary>
 	/// ディスクリプタヒープの生成
 	/// </summary>

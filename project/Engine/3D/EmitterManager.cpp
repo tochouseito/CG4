@@ -16,7 +16,7 @@ void EmitterManager::Initialize(ViewProjection* viewProjection)
 {
 	/*パーティクルマネージャの生成*/
 	particleManager_ = std::make_unique<ParticleManager>();
-	particleManager_->Initialize(viewProjection);
+	//particleManager_->Initialize(viewProjection);
 }
 
 void EmitterManager::Update()

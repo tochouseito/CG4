@@ -24,4 +24,14 @@ struct Matrix4x4 final {
         *this = *this * other;
         return *this;
     }
+    // 負号演算子のオーバーロード
+    Matrix4x4 operator-() const {
+        Matrix4x4 result;
+        for (int i = 0; i < 4; ++i) {
+            for (int j = 0; j < 4; ++j) {
+                result.m[i][j] = -m[i][j];
+            }
+        }
+        return result;
+    }
 };

@@ -23,7 +23,7 @@ StructuredBuffer<ParticleColor> gParticleColor : register(t1);
 
 struct VertexShaderInput
 {
-    float4 position : POSITIONT;
+    float4 position : POSITION;
     float2 texcoord : TEXCOORD0;
     float3 normal : NORMAL0;
     float4 color : COLOR0;
@@ -31,7 +31,7 @@ struct VertexShaderInput
 
 VertexShaderOutput main(VertexShaderInput input, uint32_t instanceId : SV_InstanceID)
 {
-    VertexShaderInput output;
+    VertexShaderOutput output;
     float4x4 WVP = mul(gParticleWVP.View,gParticleWVP.Projection);
     output.position = mul(input.position, mul(gParticleWorld[instanceId].World, WVP));
     output.texcoord = input.texcoord;

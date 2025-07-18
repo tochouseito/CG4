@@ -50,13 +50,14 @@ void ViewProjection::UpdateMatrix() {
 	Matrix4x4 rotateZMatrix = MakeRotateZMatrix(rotation_.z);
 	Matrix4x4 rotateXYZMatrix = Multiply(rotateXMatrix, Multiply(rotateYMatrix, rotateZMatrix));
 	Matrix4x4 translateMatrix = MakeTranslateMatrix(translation_);
+	//Matrix4x4 cameraMatrix = Multiply(translateMatrix, Multiply(scaleMatrix, rotateXYZMatrix));
 	Matrix4x4 cameraMatrix = Multiply(scaleMatrix, Multiply(rotateXYZMatrix, translateMatrix));
 	cameraMatrix_ = cameraMatrix;
 	viewMatrix_ = Inverse(cameraMatrix);
-	/*projectionMatrix_ = MakePerspectiveFovMatrix(0.45f,
+	projectionMatrix_ = MakePerspectiveFovMatrix(0.45f,
 		float(DirectXCommon::GetInstance()->GetBackBufferWidth()) / float(DirectXCommon::GetInstance()->GetBackBufferHeight()),
-		0.1f, 100.0f);*/
-	projectionMatrix_ = MakePerspectiveFovMatrix(fovAngleY, aspectRatio, nearZ, farZ);
+		0.1f, 100.0f);
+	//projectionMatrix_ = MakePerspectiveFovMatrix(fovAngleY, aspectRatio, nearZ, farZ);
 
 	TransferMatrix();
 }

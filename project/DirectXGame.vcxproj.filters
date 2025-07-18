@@ -234,6 +234,12 @@
     <ClCompile Include="Game\Objects\suzanne.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Objects\AnimatedCube.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Objects\Skybox.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -407,6 +413,12 @@
     <ClInclude Include="Game\Objects\suzanne.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Game\Objects\AnimatedCube.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Objects\Skybox.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shader\Sprite.VS.hlsl">
@@ -448,6 +460,13 @@
     <FxCompile Include="Resources\Shader\Dissolve.PS.hlsl" />
     <FxCompile Include="Resources\Shader\Random.PS.hlsl" />
     <FxCompile Include="Resources\Shader\ToHSV.PS.hlsl" />
+    <FxCompile Include="Resources\Shader\SkinningObject3d.VS.hlsl" />
+    <FxCompile Include="Resources\Shader\Skinning.CS.hlsl" />
+    <FxCompile Include="Resources\Shader\Particle.CS.hlsl" />
+    <FxCompile Include="Resources\Shader\GPUParticle.VS.hlsl" />
+    <FxCompile Include="Resources\Shader\GPUParticle.PS.hlsl" />
+    <FxCompile Include="Resources\Shader\EmitParticle.CS.hlsl" />
+    <FxCompile Include="Resources\Shader\UpdateParticle.CS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />
@@ -466,5 +485,10 @@
       <Filter>リソース ファイル\Shader</Filter>
     </None>
     <None Include="Resources\Shader\FullScreen.hlsli" />
+    <None Include="Resources\Shader\Skybox.hlsli" />
+    <None Include="Resources\Shader\Skybox.VS.hlsl" />
+    <None Include="Resources\Shader\Skybox.PS.hlsl" />
+    <None Include="Resources\Shader\Random.hlsli" />
+    <None Include="Resources\Shader\Mymath.hlsli" />
   </ItemGroup>
 </Project>

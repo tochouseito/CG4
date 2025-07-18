@@ -24,10 +24,13 @@ public:
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(uint32_t index);
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(uint32_t index);
 
+
 	// SRV作成
-	void CreateSRVforTexture2D(uint32_t srvIndex, ID3D12Resource* pResource, DXGI_FORMAT Format, UINT MipLevels);
+	void CreateSRVforTexture2D(uint32_t srvIndex, ID3D12Resource* pResource, DXGI_FORMAT Format, UINT MipLevels,bool IsCubemap=false);
 	// SRV生成(StructuredBuffer用)
 	void CreateSRVforStructuredBuffer(uint32_t srvIndex, ID3D12Resource* pResource, UINT numElements, UINT structuredByteStride);
+
+	void CreateUAVforStructuredBuffer(uint32_t uavIndex, ID3D12Resource* pResource, UINT numElements, UINT structuredByteStride);
 	
 	void PreDraw();
 
@@ -37,6 +40,8 @@ public:
 
 	/*ディスクリプタヒープを取得する*/
 	ID3D12DescriptorHeap* GetDescriptorHeap() { return descriptorHeap.Get(); }
+
+	ID3D12DescriptorHeap* GetDescriptorHeapU() { return descriptorHeapU.Get(); }
 
 private:
 	SrvManager() = default;
@@ -55,6 +60,9 @@ private:
 	// 次に使用するSRVインデックス
 	uint32_t useIndex = 1;
 
-	
+	// UAV用のデスクリプタサイズ
+	uint32_t descriptorSizeU;
+	// UAV用のデスクリプタヒープ
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeapU;
 };
 

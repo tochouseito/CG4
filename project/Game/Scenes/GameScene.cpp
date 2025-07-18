@@ -35,6 +35,11 @@ GameScene::~GameScene() {
 	delete suzanne_ ;
 	delete UtahTeapotModel_ ;
 	delete utahTeapot_ ;
+	delete animatedCubeModel_;
+	delete animatedCube_;
+	delete animation_;
+	delete skyboxModel_;
+	delete skybox_;
 }
 
 void GameScene::Initialize() {
@@ -49,6 +54,7 @@ void GameScene::Initialize() {
 	textureHandle_[2] = TextureManager::Load("./Resources/monsterBall.png");
 	textureHandle_[3] = TextureManager::Load("./Resources/noise.png");
 	textureHandle_[4] = TextureManager::Load("./Resources/checkerBoard.png");
+	textureHandle_[5] = TextureManager::Load("./Resources/earthcubemap.dds");
 	
 	// ビュープロジェクションの初期化
 	viewProjection_.Initialize();
@@ -90,7 +96,7 @@ void GameScene::Initialize() {
 	}
 	///*パーティクルマネージャの生成*/
 	particleManager_ = std::make_unique<ParticleManager>();
-	particleManager_->Initialize(&viewProjection_);
+	particleManager_->Initialize(&viewProjection_,textureHandle_[1]);
 	particleManager_->AddParticle("circle", textureHandle_[1]);
 	particleManager_->AddParticle("uvChecker", textureHandle_[0]);
 	/*エミッターマネージャの生成*/
@@ -106,23 +112,34 @@ void GameScene::Initialize() {
 
 	/*bunnyModel_ = Model::LordModel("bunny.obj");
 	bunny_ = new BunnyModel();
-	bunny_->Initialize(bunnyModel_, textureHandle_[0], &viewProjection_);
+	bunny_->Initialize(bunnyModel_, textureHandle_[0], &viewProjection_);*/
 
-	multiMaterialModel_ = Model::LordModel("multiMaterial.obj");
+	/*multiMaterialModel_ = Model::LordModel("multiMaterial.obj");
 	multiMaterial_ = new multiMaterialModel();
 	multiMaterial_->Initialize(multiMaterialModel_, textureHandle_[0], &viewProjection_);
 
 	multiMeshModel_ = Model::LordModel("multiMesh.obj");
 	multiMesh_ = new multiMeshModel();
-	multiMesh_->Initialize(multiMeshModel_, textureHandle_[0], &viewProjection_);
+	multiMesh_->Initialize(multiMeshModel_, textureHandle_[0], &viewProjection_);*/
 
-	suzanneModel_ = Model::LordModel("suzanne.obj");
+	/*suzanneModel_ = Model::LordModel("suzanne.obj");
 	suzanne_ = new suzanne();
 	suzanne_->Initialize(suzanneModel_, textureHandle_[0], &viewProjection_);
 
 	UtahTeapotModel_ = Model::LordModel("teapot.obj");
 	utahTeapot_ = new UtahTeapotModel();
 	utahTeapot_->Initialize(UtahTeapotModel_, textureHandle_[0], &viewProjection_);*/
+
+	animatedCubeModel_ = Model::LordModel("Walk.gltf");
+	animation_ = Model::LordAnimationFile("./Resources", "Walk.gltf");
+	animatedCube_ = new AnimatedCube();
+	animatedCube_->SetEnviromentTexture(textureHandle_[5]);
+	animatedCube_->Initialize(animatedCubeModel_, textureHandle_[0], &viewProjection_, animation_);
+
+
+	skyboxModel_ = Model::CreateSkyBox();
+	skybox_ = new Skybox();
+	skybox_->Initialize(skyboxModel_, textureHandle_[5], &viewProjection_);
 }
 
 void GameScene::Finalize()
@@ -181,13 +198,15 @@ void GameScene::Update() {
 	sprite_->Update();
 	//particles_->Update();
 	/*パーティクルマネージャの更新*/
-	//particleManager_->Update();
+	particleManager_->Update();
 	//emitterManager_->Update();
-	/*bunny_->Updata();
-	multiMaterial_->Updata();
-	multiMesh_->Updata();
-	suzanne_->Updata();
+	/*bunny_->Updata();*/
+	/*multiMaterial_->Updata();
+	multiMesh_->Updata();*/
+	/*suzanne_->Updata();
 	utahTeapot_->Updata();*/
+	animatedCube_->Updata();
+	skybox_->Update();
 	ImGui::Begin("HSV");
 	ImGui::DragFloat("hue", &DirectXCommon::GetInstance()->GetHSVData()->hue, 0.01f);
 	ImGui::DragFloat("saturation", &DirectXCommon::GetInstance()->GetHSVData()->saturation, 0.01f);
@@ -216,12 +235,13 @@ void GameScene::Update() {
 
 void GameScene::Draw() {
 	//plane_->Draw();
-	axis_->Draw();
-	sphere_->Draw();
+	//axis_->Draw();
+	//sphere_->Draw();
 	//primitive_->Draw();
 	//particles_->Draw();
 	/*パーティクルマネージャの描画*/
-	//particleManager_->Draw();
+	particleManager_->Draw();
+	particleManager_->DrawGPU();
 	//emitterManager_->Draw();
 	//sprite_->Draw();
 	//bunny_->Draw();
@@ -229,4 +249,6 @@ void GameScene::Draw() {
 	//multiMesh_->Draw();
 	//suzanne_->Draw();
 	//utahTeapot_->Draw();
+	animatedCube_->Draw();
+	//skybox_->Draw();
 }
