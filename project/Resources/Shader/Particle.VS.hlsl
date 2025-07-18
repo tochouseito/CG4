@@ -31,7 +31,7 @@ struct VertexShaderInput
 
 VertexShaderOutput main(VertexShaderInput input, uint32_t instanceId : SV_InstanceID)
 {
-    VertexShaderInput output;
+    VertexShaderOutput output;
     float4x4 WVP = mul(gParticleWVP.View,gParticleWVP.Projection);
     output.position = mul(input.position, mul(gParticleWorld[instanceId].World, WVP));
     output.texcoord = input.texcoord;
