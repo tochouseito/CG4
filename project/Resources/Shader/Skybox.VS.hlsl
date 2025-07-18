@@ -13,6 +13,15 @@ struct World
 };
 ConstantBuffer<WVP> gWVP : register(b0);
 StructuredBuffer<World> gWorld : register(t0);
+float4x4 TranslateMatrix(float3 translate)
+{
+    return float4x4(
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        translate.x, translate.y, translate.z, 1
+    );
+}
 struct VertexShaderInput
 {
 	float32_t4 position : POSITION;
@@ -21,8 +30,8 @@ struct VertexShaderInput
 VertexShaderOutput main(VertexShaderInput input){
 	VertexShaderOutput output;
 	float32_t4x4 WVP = mul(gWVP.View, gWVP.Projection);
-	WVP = mul(gWorld[0].World, WVP);
-	output.position = mul(input.position, WVP).xyww;
+    float4x4 cameraTranslate = TranslateMatrix(gWVP.cameraPosition);
+    output.position = mul(input.position, mul(cameraTranslate, WVP)).xyww;
 	output.texcoord = input.position.xyz;
 	return output;
 }
