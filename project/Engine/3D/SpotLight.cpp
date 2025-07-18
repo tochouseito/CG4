@@ -14,7 +14,7 @@ void SpotLight::CreateSpotLightResource() {
 	SpotLightData_->color = Color{ 1.0f,1.0f,1.0f,1.0f };
 	SpotLightData_->position = { 2.0f,1.25f,0.0f };
 	SpotLightData_->intensity = 4.0f;
-	SpotLightData_->direction = Normalize({ -1.0f,-1.0f,0.0f });
+	SpotLightData_->direction = Vector3({ -1.0f,-1.0f,0.0f });
 	SpotLightData_->distance = 7.0f;
 	SpotLightData_->decay = 2.0f;
 	SpotLightData_->cosAngle = std::cos(std::numbers::pi_v<float> / 3.0f);
